@@ -17,7 +17,7 @@ authors:
 license: GPL-3.0-only
 repository-code: "https://github.com/akif-k/aligner4turkish"
 doi: 10.5281/zenodo.22164016
-version: "1.0.1"
+version: "1.0.2"
 date-released: "2026-08-29"
 keywords:
   - forced alignment

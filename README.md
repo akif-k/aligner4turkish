@@ -114,6 +114,7 @@ kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
 
 ## Sürüm Notları
 
+- **v1.0.2** — README'ye bu Sürüm Notları bölümü eklendi.
 - **v1.0.1** — Belge düzeltmeleri: ctc-forced-aligner atıf ifadesi
   düzeltildi (algoritma o projeden "port edilmedi", sadece genel
   yaklaşımından esinlenildi); README'lere DOI rozeti ve anahtar

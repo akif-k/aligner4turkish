@@ -7,6 +7,11 @@ kısaca **mms_aligner** kullanılır — bkz. [CITATION.cff](CITATION.cff).)*
 
 [English README](README.en.md)
 
+**Anahtar kelimeler:** forced alignment, speech processing, speech
+recognition, speech-to-text, transcription, syllabification, wav2vec2,
+MMS, ASR, phonetics, linguistics, Turkish, Turkish language, Praat,
+TextGrid
+
 Bir ses kaydını (wav) ve o kaydın doğru transkriptini (txt) alıp,
 `facebook/mms-1b-fl102` (wav2vec2/CTC) modeliyle **gerçek forced
 alignment** (zorlamalı hizalama) yapan; harf, hece ve kelime

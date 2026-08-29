@@ -7,6 +7,10 @@ referred to as **mms_aligner** for short — see [CITATION.cff](CITATION.cff).)*
 
 [Türkçe README](README.md)
 
+**Keywords:** forced alignment, speech processing, speech recognition,
+speech-to-text, transcription, syllabification, wav2vec2, MMS, ASR,
+phonetics, linguistics, Turkish, Turkish language, Praat, TextGrid
+
 A batch command-line tool that takes an audio recording (wav) and its
 correct transcript (txt), performs **real forced alignment** with the
 `facebook/mms-1b-fl102` (wav2vec2/CTC) model, and produces a Praat

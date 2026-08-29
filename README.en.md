@@ -3,6 +3,8 @@
 *(GitHub repository name: **aligner4turkish**; the project/folder is
 referred to as **mms_aligner** for short — see [CITATION.cff](CITATION.cff).)*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164016.svg)](https://doi.org/10.5281/zenodo.22164016)
+
 [Türkçe README](README.md)
 
 A batch command-line tool that takes an audio recording (wav) and its
@@ -107,4 +109,6 @@ for details.
 ## Citation
 
 If you use this software, please cite it using the metadata in
-[CITATION.cff](CITATION.cff).
+[CITATION.cff](CITATION.cff). DOI:
+[10.5281/zenodo.22164016](https://doi.org/10.5281/zenodo.22164016)
+(this represents all versions and always resolves to the latest one).

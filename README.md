@@ -3,6 +3,8 @@
 *(GitHub deposu adı: **aligner4turkish**; proje/klasör adı olarak
 kısaca **mms_aligner** kullanılır — bkz. [CITATION.cff](CITATION.cff).)*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164016.svg)](https://doi.org/10.5281/zenodo.22164016)
+
 [English README](README.en.md)
 
 Bir ses kaydını (wav) ve o kaydın doğru transkriptini (txt) alıp,
@@ -107,4 +109,6 @@ kökeni [MahmoudAshraf97/ctc-forced-aligner](https://github.com/MahmoudAshraf97/
 ## Atıf
 
 Bu yazılımı kullanıyorsanız lütfen [CITATION.cff](CITATION.cff)
-dosyasındaki bilgilerle atıfta bulunun.
+dosyasındaki bilgilerle atıfta bulunun. DOI:
+[10.5281/zenodo.22164016](https://doi.org/10.5281/zenodo.22164016)
+(bu, tüm sürümleri temsil eder ve her zaman en son sürüme yönlenir).

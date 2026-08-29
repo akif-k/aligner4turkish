@@ -112,6 +112,19 @@ genel yaklaşımı [MahmoudAshraf97/ctc-forced-aligner](https://github.com/Mahmo
 kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) dosyasına bakın.
 
+## Sürüm Notları
+
+- **v1.0.1** — Belge düzeltmeleri: ctc-forced-aligner atıf ifadesi
+  düzeltildi (algoritma o projeden "port edilmedi", sadece genel
+  yaklaşımından esinlenildi); README'lere DOI rozeti ve anahtar
+  kelimeler eklendi; CITATION.cff güncellendi.
+- **v1.0.0** — İlk sürüm: `facebook/mms-1b-fl102` modeliyle Türkçe
+  zorlamalı hizalama; harf/hece/kelime/tam metin katmanlı Praat
+  TextGrid çıktısı üretir.
+
+Tüm sürümler için bkz.
+[GitHub Releases](https://github.com/akif-k/aligner4turkish/releases).
+
 ## Atıf
 
 Bu yazılımı kullanıyorsanız lütfen [CITATION.cff](CITATION.cff)

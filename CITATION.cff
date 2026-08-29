@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "aligner4turkish: Multi-Tier Time-Aligned Transcription for Turkish Speech Recordings"
+abstract: >-
+  A Python tool for Turkish forced alignment: aligns speech audio to a
+  known reference transcript using the facebook/mms-1b-fl102 model
+  (torchaudio.functional.forced_align), and derives VAD-informed
+  segment boundaries plus a rule-based, acoustically-arbitrated
+  syllables tier from the resulting alignment. Processes a whole
+  input/ folder of wav+txt pairs in one batch run.
+authors:
+  - family-names: Kılıç
+    given-names: "Mehmet Akif"
+    email: makilic@yahoo.com
+    orcid: "https://orcid.org/0000-0003-4482-3490"
+license: GPL-3.0-only
+repository-code: "https://github.com/akif-k/aligner4turkish"
+version: "1.0.0"
+date-released: "2026-08-29"
+keywords:
+  - forced alignment
+  - speech processing
+  - wav2vec2
+  - MMS
+  - syllabification
+  - Turkish
+  - Praat
+  - TextGrid

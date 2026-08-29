@@ -1,0 +1,8 @@
+{
+    "gap_threshold_ms": 200.0,
+    "vad_db_threshold": -40.0,
+    "syllable_word_gap_ms": 10.0,
+    "syllable_intensity_band_low_hz": 70.0,
+    "syllable_intensity_band_high_hz": 1000.0,
+    "syllable_intensity_dip_db": 2.0
+}

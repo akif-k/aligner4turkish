@@ -1,0 +1,33 @@
+# "mms_aligner" conda ortamini olusturmak icin:
+#   conda env create -f environment.yml
+# Ortam zaten varsa guncellemek icin:
+#   conda env update -n mms_aligner -f environment.yml --prune
+#
+# Not 1: torch/torchaudio, varsayilan (CPU) PyPI paketleriyle kurulur.
+# NVIDIA GPU + CUDA kullanmak isterseniz, once bu dosyadaki pip
+# bolumunden torch/torchaudio satirlarini cikarip
+# https://pytorch.org/get-started/locally/ adresindeki komutla kendi
+# platformunuza (CUDA surumunuze) uygun surumu kurun.
+#
+# Not 2: Bu proje espeak-ng GEREKTIRMEZ. ffmpeg de .wav dosyalari icin
+# GEREKMEZ (dogrudan soundfile ile okunur); SADECE input/'a .wav
+# disinda bir format (M4A, MP3, OGG, FLAC, WMA, vb.) konursa, sistemde
+# ayrica kurulu bir ffmpeg otomatik olarak kullanilir. Bu yuzden ffmpeg
+# bu dosyaya BILEREK eklenmemistir;
+# ihtiyaciniz olursa isletim sisteminizin kendi paket yoneticisiyle
+# (apt/brew/winget) kurun.
+#
+# Not 3: Bu dosya Linux, macOS ve Windows'ta (Anaconda Prompt /
+# PowerShell) ayni komutla calisir: conda env create -f environment.yml
+name: mms_aligner
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - torch
+      - torchaudio
+      - transformers
+      - soundfile
+      - numpy

@@ -1,0 +1,112 @@
+===============================================================================
+ mms_aligner - THIRD-PARTY NOTICES
+===============================================================================
+This package runs as a Python application on Linux, macOS, and Windows.
+The runtime is provided via a conda environment named "mms_aligner" (see
+environment.yml). The model is NOT shipped with this package: it is
+downloaded automatically into models/ on first run (see Section 2) and
+can be copied/moved to another machine from there (no re-download needed
+as long as models/ is copied along with the project).
+
+-------------------------------------------------------------------------------
+1) THE mms_aligner CODE IN THIS PACKAGE (mmsaligner.py, config.json,
+   syllable_rules.json, run.bat, run.sh)
+-------------------------------------------------------------------------------
+These files were written specifically for this project and are licensed
+under the GNU General Public License v3.0 (GPLv3). See the LICENSE file
+(repo root) for the full license text.
+
+The forced-alignment core inside mmsaligner.py (_merge_repeats,
+_get_spans, and the general CTC forced-alignment approach) is a direct
+port of the algorithm from MahmoudAshraf97/ctc-forced-aligner (see
+Section 2 below); the only functional difference is that this port uses
+torchaudio.functional.forced_align instead of that project's compiled
+C++ extension (forced_align_impl.cpp), so no extra build step is needed.
+
+The syllable-tier engine (_assign_syllable_ids, _build_syllable_tier,
+_parse_syllable_types, etc.) is adapted from this author's own sibling
+project, ipa_verbatim (also GPLv3), ported from IPA phoneme symbols to
+plain Turkish orthographic letters.
+
+-------------------------------------------------------------------------------
+2) ALGORITHM: MahmoudAshraf97/ctc-forced-aligner
+-------------------------------------------------------------------------------
+License  : BSD License
+Source   : https://github.com/MahmoudAshraf97/ctc-forced-aligner
+Publisher: Mahmoud Ashraf
+Note     : The CTC forced-alignment algorithm used in mmsaligner.py
+           (word/character span extraction from a CTC path) is a direct
+           port of this project's approach. See Section 1 above for
+           what was changed (torchaudio.functional.forced_align in
+           place of the original's compiled extension).
+
+-------------------------------------------------------------------------------
+3) MODEL: facebook/mms-1b-fl102  (downloaded into models/ on first run,
+   NOT included in this package)
+-------------------------------------------------------------------------------
+License  : CC-BY-NC 4.0 (Creative Commons Attribution-NonCommercial 4.0)
+Source   : https://huggingface.co/facebook/mms-1b-fl102
+Publisher: Meta AI (Facebook)
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/
+
+*** IMPORTANT - NON-COMMERCIAL RESTRICTION ***
+Unlike this project's own code (GPLv3, which permits commercial use
+under its terms), the DEFAULT MODEL this project downloads and uses is
+licensed CC-BY-NC 4.0, which PROHIBITS COMMERCIAL USE. If you need to
+use this tool commercially, you must substitute a different,
+commercially-licensed forced-alignment model (and adjust mmsaligner.py's
+MODEL_ID accordingly) - using facebook/mms-1b-fl102 itself for any
+commercial purpose is not permitted by its license, regardless of this
+project's own GPLv3 license.
+
+-------------------------------------------------------------------------------
+4) PACKAGES IN THE "mms_aligner" CONDA ENVIRONMENT  (torch, torchaudio,
+   transformers, soundfile, numpy - see environment.yml)
+-------------------------------------------------------------------------------
+These packages are installed from PyPI/conda-forge and carry permissive
+licenses (BSD, MIT, Apache 2.0, etc.). Each package's own license text
+can be found in the environment where that package is installed:
+
+  <conda-env>/lib/python3.10/site-packages/<package_name>-<version>.dist-info/
+  (in a LICENSE file, a licenses/ subfolder, or inside METADATA)
+
+These files come automatically with the package; we don't list them
+separately here because there are several packages (plus their own
+transitive dependencies), but this is the source to check.
+
+-------------------------------------------------------------------------------
+5) ffmpeg (OS package, OPTIONAL, NOT INCLUDED in this package)
+-------------------------------------------------------------------------------
+License  : GNU GPL or LGPL, depending on how the ffmpeg build was
+           configured (a "full"/non-free build such as the one commonly
+           distributed for Windows is typically GPL-licensed; some
+           Linux/macOS package-manager builds are LGPL)
+Source   : https://ffmpeg.org/
+Note     : ffmpeg is used ONLY to auto-convert non-wav audio files
+           (M4A, MP3, OGG, FLAC, WMA, etc.) dropped into input/ into
+           .wav before alignment (see _convert_other_formats in
+           mmsaligner.py). It is entirely OPTIONAL: aligning .wav files
+           never requires it. ffmpeg is not included in this package on
+           any platform; users install it separately from their own
+           operating system's package manager (apt/brew/winget, or the
+           official installer). As a result, no additional GPL/LGPL
+           source distribution obligation arises from ffmpeg (for the
+           GPLv3 license of this package's own code, see Section 1 and
+           the LICENSE file).
+
+-------------------------------------------------------------------------------
+6) SUMMARY / DISTRIBUTION RECOMMENDATION
+-------------------------------------------------------------------------------
+- Keep this THIRD-PARTY-NOTICES.txt file with the package when sharing
+  mms_aligner.
+- This package's own code is licensed under GPLv3 (see LICENSE); GPLv3
+  obligations (providing source code, preserving the license text,
+  stating changes, etc.) apply to this code.
+- The forced-alignment algorithm (BSD, Section 2) carries no extra
+  obligation beyond preserving its attribution.
+- The default model (CC-BY-NC 4.0, Section 3) is NOT included in the
+  repository and carries a NON-COMMERCIAL restriction independent of
+  this project's own license - see the warning in Section 3.
+- Since ffmpeg is optional and not included in the package (users
+  install it from their own system, Section 5), no additional GPL/LGPL
+  obligation arises from it.

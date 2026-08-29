@@ -1,0 +1,68 @@
+# mms_aligner - HECE MOTORU REGRESYON TESTLERI
+# =================================================
+# Her satir bir test: "kelime -> hece1,hece2,..."
+#   - Kelime, syllable_rules.json'a gore (tek basina, cevresinde baska
+#     kelime/sessizlik olmadan) hecelenir (bkz. run_tests.py).
+#   - "->"dan sonraki kisim, VIRGULLE ayrilmis, sirali beklenen hece
+#     metinleridir. Bir hece disi/atanmamis unsur (nadir durumda,
+#     onset/koda kuralina uymayan ve epentez de almayan bir sembol)
+#     bos ("") bir "hece" olarak gorunur.
+#   - Turemis vowelli (epentez) heceler DOGRUDAN son metinleriyle
+#     yazilir (orn. "spor" -> "sı,por", "sı" hecesi zaten "s"+"ı"
+#     epentezinin sonucudur).
+# "#" ile baslayan satirlar ve bos satirlar yok sayilir.
+#
+# Yeni bir kural denerken/eklerken kullanim:
+#   1. Asagiya yeni bir satir ekleyin (dogru/beklenen hecelemeyle).
+#   2. syllable_rules.json'u degistirin.
+#   3. python run_tests.py calistirip TUM satirlarin (yeni eklediginiz
+#      VE eskiden gecen) hala gectigini dogrulayin.
+
+# --- Temel CV/CVC/VC/CVCC kelimeleri ---
+dar -> dar
+tek -> tek
+bir -> bir
+koca -> ko,ca
+ali -> a,li
+kafese -> ka,fe,se
+konmuş -> kon,muş
+gece -> ge,ce
+gündüz -> gün,düz
+kırk -> kırk
+genç -> genç
+
+# --- Coklu hece, gercek cumleden (bkz. input/sample.txt) ---
+kapısından -> ka,pı,sın,dan
+başka -> baş,ka
+aydınlık -> ay,dın,lık
+girecek -> gi,re,cek
+hiçbir -> hiç,bir
+yeri -> ye,ri
+olmayan -> ol,ma,yan
+dükkanında -> dük,ka,nın,da
+başına -> ba,şı,na
+kıvılcımlar -> kı,vıl,cım,lar
+saçarak -> sa,ça,rak
+çalışan -> ça,lı,şan
+tıpkı -> tıp,kı
+terbiyeli -> ter,bi,ye,li
+aslanı -> as,la,nı
+andırıyordu -> an,dı,rı,yor,du
+
+# --- CCVC/CCVCC (gercek onset kumesi, onset_clusters) ---
+tren -> tren
+plan -> plan
+kral -> kral
+transfer -> trans,fer
+
+# --- s+patlamali/surtunmeli (epenthesis_onset_clusters, tureme unlusu) ---
+spor -> sı,por
+stad -> sı,tad
+skor -> sı,kor
+sfer -> si,fer
+ski -> si,ki
+stil -> si,til
+
+# --- Oncelik mekanizmasi (CV/CVC once denenir, CCVC sadece leftover
+#     onceki hecenin kodasina sigmadiginda kullanilir) ---
+matris -> mat,ris

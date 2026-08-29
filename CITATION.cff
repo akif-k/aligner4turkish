@@ -17,14 +17,21 @@ authors:
 license: GPL-3.0-only
 repository-code: "https://github.com/akif-k/aligner4turkish"
 doi: 10.5281/zenodo.22164016
-version: "1.0.0"
+version: "1.0.1"
 date-released: "2026-08-29"
 keywords:
   - forced alignment
   - speech processing
+  - speech recognition
+  - speech-to-text
+  - transcription
+  - syllabification
   - wav2vec2
   - MMS
-  - syllabification
+  - ASR
+  - phonetics
+  - linguistics
   - Turkish
+  - Turkish language
   - Praat
   - TextGrid

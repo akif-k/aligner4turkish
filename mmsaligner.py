@@ -41,11 +41,11 @@ def load_config():
     return config
 
 # --- Gercek CTC forced-alignment yardimcilari ----------------------------
-# Asagidaki algoritma MahmoudAshraf97/ctc-forced-aligner (BSD) projesinin
-# birebir portu; tek fark, o projenin derlenmesi gereken ozel C++ uzantisi
-# (forced_align_impl.cpp) yerine burada torchaudio.functional.forced_align
-# kullanilmasi (matematiksel olarak ayni CTC forced-align islemini yapar,
-# ek derleyici/kurulum gerektirmez).
+# Asagidaki algoritmanin genel yaklasimi (CTC path'inden segment/span
+# cikarma), MahmoudAshraf97/ctc-forced-aligner (BSD) projesinden esinle-
+# nilmistir; o projenin kodu veya derlenmesi gereken ozel C++ uzantisi
+# (forced_align_impl.cpp) burada KULLANILMAMISTIR - bunun yerine
+# torchaudio.functional.forced_align ile bagimsiz olarak yazilmistir.
 
 
 class _Segment:

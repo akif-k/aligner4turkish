@@ -107,8 +107,9 @@ atıf yapılması gerekir.
 Kullanılan varsayılan model (`facebook/mms-1b-fl102`) **CC-BY-NC 4.0**
 lisanslıdır ve **ticari kullanıma kapalıdır** — bu, projenin kendi
 lisansından bağımsız bir kısıtlamadır. Zorlamalı hizalama algoritmasının
-kökeni [MahmoudAshraf97/ctc-forced-aligner](https://github.com/MahmoudAshraf97/ctc-forced-aligner)
-(BSD Lisansı) projesidir. Ayrıntılar için
+genel yaklaşımı [MahmoudAshraf97/ctc-forced-aligner](https://github.com/MahmoudAshraf97/ctc-forced-aligner)
+(BSD Lisansı) projesinden esinlenmiştir (kod veya paket olarak
+kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) dosyasına bakın.
 
 ## Atıf

@@ -17,11 +17,13 @@ under the GNU General Public License v3.0 (GPLv3). See the LICENSE file
 (repo root) for the full license text.
 
 The forced-alignment core inside mmsaligner.py (_merge_repeats,
-_get_spans, and the general CTC forced-alignment approach) is a direct
-port of the algorithm from MahmoudAshraf97/ctc-forced-aligner (see
-Section 2 below); the only functional difference is that this port uses
+_get_spans, and the general CTC forced-alignment approach) was
+independently written, but its general approach (extracting
+word/character spans from a CTC path) was inspired by
+MahmoudAshraf97/ctc-forced-aligner (see Section 2 below). No code or
+package from that project is used; this project's implementation uses
 torchaudio.functional.forced_align instead of that project's compiled
-C++ extension (forced_align_impl.cpp), so no extra build step is needed.
+C++ extension (forced_align_impl.cpp), and requires no extra build step.
 
 The syllable-tier engine (_assign_syllable_ids, _build_syllable_tier,
 _parse_syllable_types, etc.) is adapted from this author's own sibling
@@ -34,11 +36,11 @@ plain Turkish orthographic letters.
 License  : BSD License
 Source   : https://github.com/MahmoudAshraf97/ctc-forced-aligner
 Publisher: Mahmoud Ashraf
-Note     : The CTC forced-alignment algorithm used in mmsaligner.py
-           (word/character span extraction from a CTC path) is a direct
-           port of this project's approach. See Section 1 above for
-           what was changed (torchaudio.functional.forced_align in
-           place of the original's compiled extension).
+Note     : The CTC forced-alignment logic in mmsaligner.py (word/
+           character span extraction from a CTC path) was
+           independently written but its general approach was
+           inspired by this project. No code from this project is
+           used; see Section 1 above.
 
 -------------------------------------------------------------------------------
 3) MODEL: facebook/mms-1b-fl102  (downloaded into models/ on first run,

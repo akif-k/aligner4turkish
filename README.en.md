@@ -104,11 +104,12 @@ this project.
 
 The default model used (`facebook/mms-1b-fl102`) is licensed
 **CC-BY-NC 4.0** and is **not licensed for commercial use** — this
-restriction is independent of this project's own license. The forced
-alignment algorithm originates from
+restriction is independent of this project's own license. The general
+approach of the forced alignment algorithm was inspired by
 [MahmoudAshraf97/ctc-forced-aligner](https://github.com/MahmoudAshraf97/ctc-forced-aligner)
-(BSD License). See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)
-for details.
+(BSD License), though no code or package from that project is used —
+it was written independently. See
+[THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for details.
 
 ## Citation
 

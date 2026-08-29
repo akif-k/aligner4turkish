@@ -1,0 +1,32 @@
+# Indirilen model agirliklari (ilk calistirmada otomatik indirilir, ~4 GB;
+# depoya dahil edilmez)
+models/
+
+# Kullanicilarin kendi ses/metin dosyalari (ornek cift disinda)
+input/*.wav
+input/*.txt
+input/*.m4a
+input/*.aac
+input/*.mp3
+input/*.opus
+input/*.amr
+input/*.ogg
+input/*.oga
+input/*.flac
+input/*.wma
+input/*.3gp
+input/*.3gpp
+input/*.caf
+!input/sample.wav
+!input/sample.txt
+
+# Uretilen ciktilar (yeniden calistirilarak reproduce edilebilir)
+output/*.TextGrid
+
+# Python
+__pycache__/
+*.pyc
+
+# Isletim sistemi
+.DS_Store
+Thumbs.db

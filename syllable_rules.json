@@ -1,0 +1,19 @@
+{
+    "vowel_value": 8,
+    "hece_degerleri": {
+        "a": 8, "e": 8, "ı": 8, "i": 8, "o": 8, "ö": 8, "u": 8, "ü": 8,
+
+        "p": 1, "t": 1, "k": 1, "ç": 1, "q": 1,
+        "b": 2, "d": 2, "g": 2, "c": 2, "x": 2,
+        "f": 3, "s": 3, "ş": 3,
+        "z": 4, "j": 4,
+        "l": 5, "r": 5, "v": 5,
+        "m": 6, "n": 6, "w": 6,
+        "y": 7, "h": 7, "ğ": 7
+    },
+    "syllable_types_priority": ["CV", "CVC", "VC", "CVCC", "V", "CCVC", "CCVCC"],
+    "coda_ordering": "descending",
+
+    "onset_clusters": ["pl", "pr", "bl", "br", "tr", "dr", "kl", "kr", "gl", "gr", "fl", "fr"],
+    "epenthesis_onset_clusters": ["sp", "st", "sk", "sf"]
+}

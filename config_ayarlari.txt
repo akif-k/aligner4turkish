@@ -1,0 +1,132 @@
+MMS_ALIGNER - config.json AYARLARI REHBERI
+=============================================
+
+Bu dosya, config.json'daki her ayarin NE ISE YARADIGINI, HANGI BELIRTIYI
+GORDUGUNUZDE hangi yone degistirmeniz gerektigini ve pratik ornek
+degerleri anlatir; PRATIK/SORUN GIDERME odaklidir.
+
+0) config.json nasil duzenlenir
+------------------------------------
+- Herhangi bir metin editorüyle (Not Defteri dahil) acip degerleri
+  degistirebilirsiniz. Gecerli bir JSON dosyasi olmalidir: sayilardan
+  sonra (SON satir haric) virgul, metin degerleri cift tirnak icinde.
+- Degisiklik yaptiktan sonra programi (run.bat ya da
+  "python mmsaligner.py") YENIDEN CALISTIRMANIZ yeterlidir; baska bir
+  islem gerekmez, dosya her calistirmada yeniden okunur.
+- Bir anahtari SILERSENIZ ya da dosyayi tamamen SILERSENIZ, o ayar
+  icin varsayilan deger kullanilir (program hata vermez).
+- Ayarlar TUM input/ klasorundeki dosyalara ayni sekilde uygulanir;
+  dosyaya ozel farkli ayar yapma imkani su an YOKTUR.
+
+1) gap_threshold_ms (varsayilan: 50.0)
+------------------------------------------
+NE ISE YARAR: "segments" tier'inde bir sessizligin kendi basina, ayri
+ve etiketsiz ("") bir aralik olarak gosterilmesi icin gereken en kisa
+sureyi (milisaniye) belirler. Bu sureden KISA sessizlikler ayri
+gosterilmez, komsu harflere paylastirilarak kapatilir.
+
+NE ZAMAN DEGISTIRMELI:
+- "segments" tier'inde OLMASI GEREKENDEN COK DAHA FAZLA kucuk (birkaç
+  10 ms'lik) sessizlik araligi goruyorsaniz (orn. yavas/tane tane
+  konusulmus, harfler arasi dogal bosluklari uzun olan bir kayitta),
+  degeri YUKSELTIN (orn. 100, 150, 200). Bu, gercekte konusmanin
+  parcasi olan ama VAD'in kisaca "sessiz" saydigi aninlari yanlislikla
+  ayri sessizlik gostermekten kacinir.
+    (Ornek: bu projede yavas konusulmus bir kayitta 50 -> 200 yapmak
+    gerekli oldu; su anki config.json'da bu deger 200.0.)
+- "segments" tier'inde OLMASI GEREKEN gercek duraksamalar/nefes
+  aralarinin bile ayri gosterilmedigini, harflere karistigini
+  goruyorsaniz, degeri DUSURUN (orn. 30, 20).
+
+DIKKAT: Bu ayar sadece "segments" tier'ini etkiler; "words" tier'i
+buyuklugune bakilmaksizin butun bosluklari her zaman iki kelimenin
+ortasindan boler (hicbir zaman ayri sessizlik gostermez), bu ayardan
+ETKILENMEZ.
+
+2) vad_db_threshold (varsayilan: -40.0)
+------------------------------------------
+NE ISE YARAR: Basit enerji-tabanli VAD'in (ses etkinligi tespiti) bir
+ani "sessiz" sayabilmesi icin enerjinin ALTINDA kalmasi gereken dB
+esigi. Bu deger, gap_threshold_ms'in "sessizlik" olarak degerlendirdigi
+her alanin GERCEKTEN sessiz olup olmadigina karar verir.
+
+NE ZAMAN DEGISTIRMELI:
+- Kayit GURULTULU ise (fan sesi, oda gurultusu, mikrofon hisi) ve VAD
+  bu gurultuyu "konusma" sanip gercek sessizlikleri KACIRIYORSA (yani
+  olmasi gereken sessizlik araliklari "segments" tier'inde
+  gorunmuyorsa), degeri DUSURUN (daha negatif yapin, orn. -50, -60) -
+  boylece sadece COK sessiz anlar "sessiz" sayilir.
+- Kayit COK TEMIZ/sessiz bir ortamda alinmis ve VAD hala bazi gercek
+  konusma anlarini (orn. yumusak/hafif telaffuz edilmis sesler,
+  fisilti) yanlislikla "sessiz" sayiyorsa, degeri YUKSELTIN (daha az
+  negatif, orn. -30, -25).
+- Genel kural: YUKSEK (daha az negatif, orn. -25) deger VAD'i daha
+  HASSAS/AGRESIF yapar (daha COK yeri sessiz sayar); DUSUK (daha
+  negatif, orn. -55) deger daha AZ hassas yapar (daha AZ yeri sessiz
+  sayar, sadece belirgin sessizlikleri yakalar).
+
+3) syllable_word_gap_ms (varsayilan: 10.0)
+------------------------------------------
+NE ISE YARAR: "syllables" tier'inde iki kelimenin AYRI hecelenmesi
+(hece kelime sinirini asla gecmez) icin, aralarindaki VAD boslugunun
+asmasi gereken en kisa sure (ms). Bu sureden KISA (ya da hic) bosluksa,
+iki kelime TEK bir akis olarak birlikte hecelenir (hece kelime sinirini
+gecebilir - baglantili/duraksamasiz konusmayi yansitir).
+
+NE ZAMAN DEGISTIRMELI:
+- "syllables" tier'inde kelime sinirlarini asan (orn. bir kelimenin
+  son harfinin bir sonraki kelimenin ilk hecesine karistigi) beklenmedik
+  birlesmeler COK SIK goruyorsaniz, degeri DUSURUN (orn. 5) - boylece
+  daha kucuk bosluklarda bile kelimeler ayri hecelenir.
+- Kayittaki konusmaci COK akici/baglantili konusuyorsa ve kelimeler
+  arasinda GERCEKTEN neredeyse hic bosluk yoksa, ama yine de her
+  kelimenin AYRI hecelenmesini istiyorsaniz, degeri YUKSELTIN (orn. 20,
+  30) - boylece daha buyuk dogal bosluklarda bile kelimeler birlesmez.
+- Bu ayari cok yukseltmek (orn. 100+), pratikte TUM kelimeleri her
+  zaman ayri hecelemeye zorlar (baglantili konusma ozelligini etkisiz
+  kilar).
+
+4) syllable_intensity_band_low_hz / syllable_intensity_band_high_hz
+   (varsayilan: 70.0 / 1000.0)
+------------------------------------------------------------------------
+NE ISE YARAR: Hece motorunun, kurallarin COZEMEDIGI nadir durumlarda
+(bkz. madde 5) "hakem" olarak kullandigi ses enerjisi (intensity)
+konturunu cikarmak icin bant-gecirgen filtrenin alt/ust sinirlari (Hz).
+Varsayilan 70-1000 Hz araligi, temel frekans (pitch) ve ilk formant
+civarini kapsar, boylece yuksek frekansli surtunmeli/tislama
+gurultusunu (orn. "s", "ş" sesleri) bastirip enerji konturunu
+"sonorluk"a (V/C ayrimina) daha yakin hale getirir.
+
+NE ZAMAN DEGISTIRMELI: Bu iki ayari degistirmeniz GENELLIKLE gerekmez;
+sadece cok DUSUK ya da cok YUKSEK sesli bir konusmaci icin (orn. cok
+kalin/pes bir ses icin alt siniri 50 Hz'e dusurmek, ya da cok ince/tiz
+bir ses icin biraz yukseltmek) ince ayar yapmak isterseniz kullanin.
+
+5) syllable_intensity_dip_db (varsayilan: 2.0)
+------------------------------------------------------------------------
+NE ISE YARAR: Yukaridaki intensity konturunda "gercek bir dusum
+(dip) var" sayilmasi icin gereken en az derinlik (dB) - "akustik
+hakem" mekanizmasi icin kullanilir.
+
+NE ZAMAN DEGISTIRMELI: Bu ayar SADECE hece kurallarinin COZEMEDIGI
+(gercek Turkce metinlerde NADIR gorulen) durumlarda etkili olur, bu
+yuzden gunluk kullanimda pratik bir etkisi COK AZ hissedilir. Deger
+YUKSELTILIRSE hakem daha SECICI olur (daha az durumda "net dip var"
+der, daha sik varsayilan davranisa - onceki hecenin kodasina ekleme -
+doner); DUSURULURSE daha az derin dususleri bile "gercek dip" sayar.
+
+6) Hizli sorun -> ayar tablosu
+------------------------------------
+    BELIRTI                                    -> HANGI AYAR, HANGI YONE
+    ---------------------------------------------------------------------
+    "segments"'te cok fazla kucuk sessizlik     -> gap_threshold_ms YUKSELT
+    "segments"'te gercek duraksamalar kayboluyor -> gap_threshold_ms DUSUR
+    Gurultu sessizlik saniliyor                 -> vad_db_threshold DUSUR
+    Gercek sessizlikler kaciriliyor              -> vad_db_threshold YUKSELT
+    "syllables"'te kelimeler beklenmedik birlesiyor -> syllable_word_gap_ms DUSUR
+    Her kelimeyi kesin ayri hecelemek istiyorum -> syllable_word_gap_ms YUKSELT
+
+Bir ayari degistirdikten sonra SONUCU GORMEK icin, mmsaligner.py'yi
+tekrar calistirip output/ klasorundeki ilgili .TextGrid dosyasini
+Praat'ta (ya da bir metin editorunde) tekrar acmaniz yeterlidir - eski
+dosyanin uzerine yazilir.

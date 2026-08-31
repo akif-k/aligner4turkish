@@ -1,8 +1,5 @@
 # mms_aligner — Multi-Tier Time-Aligned Transcription for Turkish
 
-*(GitHub repository name: **aligner4turkish**; the project/folder is
-referred to as **mms_aligner** for short — see [CITATION.cff](CITATION.cff).)*
-
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164016.svg)](https://doi.org/10.5281/zenodo.22164016)
 
 [Türkçe README](README.md)
@@ -29,7 +26,7 @@ TextGrid file with character-, syllable-, and word-level timestamps.
 - **Rule-based Turkish syllabification**: a syllable engine built on a
   sonority hierarchy and an acoustic arbiter mechanism; for the origin
   and a detailed explanation of the same approach, see
-  [ipa4turkish](https://github.com/akif-k/ipa4turkish)
+  [ipa_verbatim](https://github.com/akif-k/ipa_verbatim)
   (Kılıç, M. A. <https://doi.org/10.5281/zenodo.22081832>).
 - **Zero-crossing-aligned boundaries**: every timestamp is snapped to
   the nearest true waveform zero-crossing (up to 10 ms deviation).

@@ -1,8 +1,5 @@
 # mms_aligner — Türkçe İçin Çok Katmanlı Zaman Hizalı Transkripsiyon
 
-*(GitHub deposu adı: **aligner4turkish**; proje/klasör adı olarak
-kısaca **mms_aligner** kullanılır — bkz. [CITATION.cff](CITATION.cff).)*
-
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22164016.svg)](https://doi.org/10.5281/zenodo.22164016)
 
 [English README](README.en.md)
@@ -31,7 +28,7 @@ seviyesinde zaman damgaları içeren bir Praat TextGrid dosyası üreten,
 - **Kural tabanlı Türkçe heceleme**: sonorluk hiyerarşisine ve akustik
   bir hakem mekanizmasına dayanan hece motoru; motorun kökeni ve
   ayrıntılı açıklaması için bkz.
-  [ipa4turkish](https://github.com/akif-k/ipa4turkish)
+  [ipa_verbatim](https://github.com/akif-k/ipa_verbatim)
   (Kılıç, M. A. <https://doi.org/10.5281/zenodo.22081832>).
 - **Sıfır-genlik geçişine hizalanmış sınırlar**: tüm zaman damgaları en
   yakın gerçek dalga-formu geçişine (en fazla 10 ms sapmayla) taşınır.
@@ -124,7 +121,7 @@ kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
   TextGrid çıktısı üretir.
 
 Tüm sürümler için bkz.
-[GitHub Releases](https://github.com/akif-k/aligner4turkish/releases).
+[GitHub Releases](https://github.com/akif-k/mms_aligner/releases).
 
 ## Atıf
 

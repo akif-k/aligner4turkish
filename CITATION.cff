@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "mms_aligner: Multi-Tier Time-Aligned Transcription for Turkish Speech Recordings"
+title: "aligner4turkish: Multi-Tier Time-Aligned Transcription for Turkish Speech Recordings"
 abstract: >-
   A Python tool for Turkish forced alignment: aligns speech audio to a
   known reference transcript using the facebook/mms-1b-fl102 model
@@ -15,7 +15,7 @@ authors:
     email: makilic@yahoo.com
     orcid: "https://orcid.org/0000-0003-4482-3490"
 license: GPL-3.0-only
-repository-code: "https://github.com/akif-k/mms_aligner"
+repository-code: "https://github.com/akif-k/aligner4turkish"
 doi: 10.5281/zenodo.22164016
 version: "1.0.2"
 date-released: "2026-08-29"

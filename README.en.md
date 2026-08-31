@@ -117,3 +117,8 @@ If you use this software, please cite it using the metadata in
 [CITATION.cff](CITATION.cff). DOI:
 [10.5281/zenodo.22164016](https://doi.org/10.5281/zenodo.22164016)
 (this represents all versions and always resolves to the latest one).
+
+## Development note
+
+Anthropic's Claude Code was used to assist with code writing and
+documentation during the development of this project.

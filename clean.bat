@@ -21,6 +21,7 @@ if not "%~1"=="" if "%YES%"=="0" (
 echo Silinecek:
 echo   - %SCRIPT_DIR%\output\*
 echo   - __pycache__ klasorleri (proje icinde)
+echo   - mmsaligner.log (varsa)
 
 if "%YES%"=="0" (
     set /p "REPLY=Devam edilsin mi? [e/H] "
@@ -39,5 +40,7 @@ for %%D in (output) do (
 for /d /r %%P in (__pycache__) do (
     if exist "%%P" rd /s /q "%%P"
 )
+
+if exist "mmsaligner.log" del /q "mmsaligner.log"
 
 echo Temizlendi.

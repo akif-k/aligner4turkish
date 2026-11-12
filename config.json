@@ -4,5 +4,7 @@
     "syllable_word_gap_ms": 10.0,
     "syllable_intensity_band_low_hz": 70.0,
     "syllable_intensity_band_high_hz": 1000.0,
-    "syllable_intensity_dip_db": 2.0
+    "syllable_intensity_dip_db": 2.0,
+    "long_word_warning_factor": 1.8,
+    "edge_speech_warning_ms": 400.0
 }

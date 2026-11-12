@@ -6,7 +6,9 @@ import re
 import shutil
 import subprocess
 import sys
+import traceback
 import unicodedata
+from datetime import datetime
 
 import numpy as np
 import soundfile as sf
@@ -19,6 +21,7 @@ MODELS_DIR = os.path.join(BASE_DIR, "models")
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 INPUT_DIR = os.path.join(BASE_DIR, "input")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+LOG_PATH = os.path.join(BASE_DIR, "mmsaligner.log")
 SAMPLING_FREQ = 16000
 
 DEFAULT_CONFIG = {
@@ -28,6 +31,8 @@ DEFAULT_CONFIG = {
     "syllable_intensity_band_low_hz": 70.0,
     "syllable_intensity_band_high_hz": 1000.0,
     "syllable_intensity_dip_db": 2.0,
+    "long_word_warning_factor": 1.8,
+    "edge_speech_warning_ms": 400.0,
 }
 
 
@@ -211,6 +216,24 @@ def _vad_silence_span(waveform_np, sr, t0, t1, db_threshold, hop_ms=5.0):
     if best_start is None:
         return t0, t0
     return best_start / sr, best_end / sr
+
+
+def _voiced_duration(waveform_np, sr, t0, t1, db_threshold, hop_ms=5.0):
+    """[t0, t1] araliginda, hop_ms'lik pencerelerden RMS enerjisi
+    db_threshold'un USTUNDE olanlarin (yani VAD'a gore sessiz OLMAYAN)
+    toplam suresini (saniye) dondurur. Bkz. _vad_silence_span."""
+    hop = max(1, int(round(hop_ms / 1000.0 * sr)))
+    i0 = max(0, int(round(t0 * sr)))
+    i1 = min(len(waveform_np), int(round(t1 * sr)))
+    voiced = 0
+    i = i0
+    while i < i1:
+        j = min(i + hop, i1)
+        rms = float(np.sqrt(np.mean(waveform_np[i:j] ** 2))) + 1e-10
+        if 20.0 * math.log10(rms) >= db_threshold:
+            voiced += j - i
+        i = j
+    return voiced / sr
 
 
 def _char_bounds_with_gaps(item_ranges, segments, stride_ms, waveform_np, sr, gap_threshold_ms, vad_db_threshold):
@@ -645,6 +668,112 @@ def _asciify(text):
     return "".join(ch for ch in text if not unicodedata.combining(ch))
 
 
+def _find_unknown_chars(words, dictionary):
+    """Model sozlugunde (ASCII yedegine ragmen) karsiligi olmayan, bu yuzden
+    hizalamadan SESSIZCE dusurulecek karakterleri bulur. Donus:
+    {karakter: {"count": adet, "words": [ornek kelimeler]}} (ilk gorulme
+    sirasiyla). Bu karakterler (orn. &, €, emoji, baska
+    alfabelerin harfleri) hizalamanin kaymasina ya da dosyanin atlanmasina
+    yol acabilir."""
+    unknown = {}
+    for w in words:
+        for ch in w:
+            mapped = ch if ch in dictionary else _asciify(ch)
+            if mapped in dictionary:
+                continue
+            info = unknown.setdefault(ch, {"count": 0, "words": []})
+            info["count"] += 1
+            if w not in info["words"] and len(info["words"]) < 5:
+                info["words"].append(w)
+    return unknown
+
+
+def _locate_unknown_chars(text, unknown):
+    """`unknown` (bkz. _find_unknown_chars) icindeki her karakterin, ORIJINAL
+    transkript metnindeki (satir, sutun) konumlarini bulur (1'den baslar).
+    Karakterler kucuk harfe cevrilmis metinden bulundugu icin, orijinal
+    metindeki her karakterin kucuk harf karsiligi da kontrol edilir."""
+    locations = {ch: [] for ch in unknown}
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        for col, orig in enumerate(line, start=1):
+            for ch in set(orig.lower()):
+                if ch in locations:
+                    locations[ch].append((line_no, col))
+    return locations
+
+
+def _char_label(ch):
+    """Bir karakteri goruntulenebilir bicimde etiketler, orn.:
+    "'&' (U+0026 AMPERSAND)"; gorunmeyen karakterler (sifir genislikli
+    bosluk, BOM, birlesik isaretler...) icin "(gorunmez)" yazilir."""
+    name = unicodedata.name(ch, "BILINMEYEN")
+    visible = ch.isprintable() and not ch.isspace() and not unicodedata.combining(ch)
+    shown = f"'{ch}'" if visible else "(görünmez)"
+    return f"{shown} (U+{ord(ch):04X} {name})"
+
+
+def _format_unknown_chars(unknown, locations=None, max_locations=10):
+    """_find_unknown_chars ciktisini, her karakter icin bir satir olacak
+    sekilde okunabilir hale getirir, orn.:
+      - '&' (U+0026 AMPERSAND): 1 kez; konum: satir 1 sutun 5; kelimeler: &"""
+    lines = []
+    for ch, info in unknown.items():
+        line = f"  - {_char_label(ch)}: {info['count']} kez"
+        locs = (locations or {}).get(ch) or []
+        if locs:
+            shown = ", ".join(f"satır {ln} sütun {col}" for ln, col in locs[:max_locations])
+            if len(locs) > max_locations:
+                shown += f", ... (+{len(locs) - max_locations})"
+            line += f"; konum: {shown}"
+        line += f"; kelimeler: {', '.join(info['words'])}"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def _short_unknown_chars(unknown):
+    """Ozet satiri icin kisa liste, orn.: "'&' (U+0026 AMPERSAND), ..."."""
+    return ", ".join(_char_label(ch) for ch in unknown)
+
+
+class TranscriptError(ValueError):
+    """Transkriptteki (kodlama/karakter/bos metin gibi) kullanicinin
+    duzeltebilecegi bir sorun. `summary` ozet satirinda, `details` ise
+    terminalde ve log dosyasinda (ayrintili) gosterilir."""
+
+    def __init__(self, summary, details=""):
+        super().__init__(summary)
+        self.summary = summary
+        self.details = details
+
+
+def _read_transcript(text_path):
+    """Transkripti UTF-8 olarak okur (Windows Not Defteri'nin ekledigi BOM
+    varsa atlanir). Dosya UTF-8 degilse, cozulemeyen baytin satir/sutun
+    konumunu ve degerini iceren bir TranscriptError firlatir."""
+    with open(text_path, "rb") as f:
+        raw = f.read()
+    try:
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError as e:
+        start = e.start
+        if raw.startswith(b"\xef\xbb\xbf"):
+            start += 3
+        before = raw[:start]
+        line_no = before.count(b"\n") + 1
+        col = len(before[before.rfind(b"\n") + 1:].decode("utf-8", errors="replace")) + 1
+        bad = raw[start:start + max(1, e.end - e.start)]
+        context = raw[max(0, start - 20):start + 20].decode("utf-8", errors="replace")
+        raise TranscriptError(
+            f"transkript UTF-8 değil: satır {line_no} sütun {col}'deki bayt "
+            f"0x{bad.hex().upper()} çözülemedi",
+            f"  - Konum: satır {line_no}, sütun {col} (dosya başından {start}. bayt)\n"
+            f"  - Bayt(lar): {' '.join(f'0x{b:02X}' for b in bad)}\n"
+            f"  - Çevresi: {context!r}\n"
+            f"  - Çözüm: dosyayı metin düzenleyicide açıp 'UTF-8' kodlamasıyla kaydedin\n"
+            f"    (Windows'ta Türkçe metinler çoğu zaman 'ANSI'/Windows-1254 olarak kaydedilir).",
+        ) from e
+
+
 def _normalize_text(text, asciify=True):
     text = text.lower()
     if asciify:
@@ -717,6 +846,7 @@ class DynamicMMSAligner:
     def align(
         self, audio_path, text, gap_threshold_ms=None, vad_db_threshold=None, syllable_word_gap_ms=None,
         syllable_intensity_band_low_hz=None, syllable_intensity_band_high_hz=None, syllable_intensity_dip_db=None,
+        long_word_warning_factor=None, edge_speech_warning_ms=None,
     ):
         config = load_config()
         if gap_threshold_ms is None:
@@ -731,6 +861,10 @@ class DynamicMMSAligner:
             syllable_intensity_band_high_hz = config["syllable_intensity_band_high_hz"]
         if syllable_intensity_dip_db is None:
             syllable_intensity_dip_db = config["syllable_intensity_dip_db"]
+        if long_word_warning_factor is None:
+            long_word_warning_factor = config["long_word_warning_factor"]
+        if edge_speech_warning_ms is None:
+            edge_speech_warning_ms = config["edge_speech_warning_ms"]
 
         # torchaudio.load() artik TorchCodec (ve dolayisiyla sisteme kurulu
         # paylasimli/DLL bir ffmpeg) gerektiriyor; wav dosyalari icin buna
@@ -768,7 +902,21 @@ class DynamicMMSAligner:
         # ASCII karsiligina cevrilir (bkz. yukaridaki _TURKISH_ASCII_MAP).
         words_display = _normalize_text(text, asciify=False).split()
         if not words_display:
-            raise ValueError("Hizalanacak metin bos.")
+            raise TranscriptError("transkript boş (hizalanacak kelime yok)")
+
+        # Model sozlugunde karsiligi olmayan karakterler hizalamayi her
+        # durumda bozar (_get_spans'teki eslesme kontrolu basarisiz olur);
+        # bu yuzden hizalamaya hic girmeden, karakterleri ve transkriptteki
+        # konumlarini bildiren acik bir hatayla durulur.
+        unknown = _find_unknown_chars(words_display, dictionary)
+        if unknown:
+            locations = _locate_unknown_chars(text, unknown)
+            raise TranscriptError(
+                f"transkriptte model sözlüğünde olmayan karakter(ler) var: {_short_unknown_chars(unknown)}",
+                _format_unknown_chars(unknown, locations)
+                + "\n  - Çözüm: bu karakterleri transkriptten silin ya da okunuşlarıyla yazın"
+                  " (ör. '&' -> 've').",
+            )
 
         tokens_starred, text_starred = [], []
         for w in words_display:
@@ -867,7 +1015,72 @@ class DynamicMMSAligner:
             chars, word_chars_ranges, word_gaps_ms, syllable_word_gap_ms, syllable_rules, intensity_arbiter
         )
 
+        # Transkriptte eksik bolum olabilecegini gosteren anormal uzun
+        # kelimeler (bkz. _find_long_words); _run() bunu uyari olarak yazar.
+        self.last_long_words = _find_long_words(word_texts, word_chars_ranges, chars, long_word_warning_factor)
+
+        # Kaydin basinda/sonunda transkriptte olmayan konusma: hizalama bunu
+        # etiketsiz ("") bir "sessizlik" araligina koyar; o aralikta VAD'a
+        # gore sesli kisim edge_speech_warning_ms'i asiyorsa uyari verilir.
+        self.last_edge_speech = []
+        letters = [c for c in chars if c["text"]]
+        if edge_speech_warning_ms and edge_speech_warning_ms > 0 and letters:
+            for where, t0, t1 in (("başında", 0.0, letters[0]["start"]),
+                                  ("sonunda", letters[-1]["end"], total_duration)):
+                voiced = _voiced_duration(waveform_np, SAMPLING_FREQ, t0, t1, vad_db_threshold)
+                if voiced * 1000.0 > edge_speech_warning_ms:
+                    self.last_edge_speech.append({"where": where, "start": t0, "end": t1, "voiced": voiced})
+
         return chars, syllables, words, total_duration
+
+def _find_long_words(word_texts, word_chars_ranges, chars, factor, min_words=5, min_letters=3):
+    """Transkriptte eksik bir bolum olabilecegini gosteren, normalden
+    belirgin sekilde UZUN hizalanmis kelimeleri bulur. Metinde olmayan
+    konusma, hizalamada komsu kelimelere yayildigi icin o kelimeler
+    anormal uzun gorunur.
+    Her kelimenin KONUSMA suresi ("segments" tier'indeki harflerinin
+    toplam suresi; VAD'a gore gercek sessizlik olan "" araliklari HARIC,
+    boylece duraksama/nefes oncesindeki kelimeler uzun sayilmaz), harf
+    basina dusen sureye cevrilir ve dosyanin kendi MEDYAN harf basina
+    suresiyle karsilastirilir (konusma hizi kisiden kisiye degistigi
+    icin sabit bir esik yerine her dosyanin kendi hizi kullanilir).
+    Konusma suresi, beklenenin (medyan x harf sayisi) `factor` katini
+    asan kelimeler dondurulur. Kisa kelimeler (orn. "şu", "ve") dogal
+    olarak harf basina daha uzun okundugu icin harf sayisi en az
+    `min_letters` kabul edilir. `factor` <= 0 ise ya da dosyada
+    `min_words`'ten az kelime varsa (guvenilir bir medyan icin) kontrol
+    yapilmaz."""
+    if not factor or factor <= 0 or len(word_texts) < min_words:
+        return []
+    infos = []
+    for text, (cs, ce) in zip(word_texts, word_chars_ranges):
+        letters = [c for c in chars[cs : ce + 1] if c["text"]]
+        if not letters:
+            continue
+        speech = sum(c["end"] - c["start"] for c in letters)
+        infos.append((text, chars[cs]["start"], chars[ce]["end"], speech, max(len(letters), min_letters)))
+    if len(infos) < min_words:
+        return []
+    per_letter = sorted(speech / n for _t, _s, _e, speech, n in infos)
+    mid = len(per_letter) // 2
+    median = per_letter[mid] if len(per_letter) % 2 else (per_letter[mid - 1] + per_letter[mid]) / 2.0
+    long_words = []
+    for text, start, end, speech, n in infos:
+        expected = median * n
+        if expected > 0 and speech > factor * expected:
+            long_words.append({"text": text, "start": start, "end": end,
+                               "speech": speech, "expected": expected, "ratio": speech / expected})
+    return long_words
+
+
+def _format_long_words(long_words):
+    return "\n".join(
+        f"  - \"{w['text']}\": {w['start']:.3f}–{w['end']:.3f} sn arası "
+        f"(konuşma {w['speech']:.2f} sn; bu dosyanın hızına göre beklenen ~{w['expected']:.2f} sn, "
+        f"{w['ratio']:.1f} kat)"
+        for w in long_words
+    )
+
 
 def _escape_textgrid(text):
     """Praat TextGrid metin alaninda gomulu cift tirnaklari, format
@@ -948,9 +1161,10 @@ def _convert_other_formats(input_dir):
         return
 
     if shutil.which("ffmpeg") is None:
-        print(f"[UYARI] input/ klasöründe {len(source_files)} adet .wav olmayan ses "
-              f"dosyası var, ama sistemde ffmpeg kurulu değil; bunlar dönüştürülemeyecek "
-              f"ve atlanacak. ffmpeg kurup tekrar deneyin.")
+        _report("UYARI", "-", f"input/ klasöründe {len(source_files)} adet .wav olmayan ses "
+                              f"dosyası var, ama sistemde ffmpeg kurulu değil; bunlar dönüştürülemeyecek "
+                              f"ve atlanacak. ffmpeg kurup tekrar deneyin.",
+                "\n".join(f"  - {os.path.basename(p)}" for p in source_files))
         return
 
     for src in source_files:
@@ -965,20 +1179,72 @@ def _convert_other_formats(input_dir):
             capture_output=True, text=True,
         )
         if result.returncode != 0:
-            print(f"[HATA] '{os.path.basename(src)}' dönüştürülemedi: {result.stderr.strip()[-300:]}")
+            _report("HATA", os.path.basename(src), "ses dosyası .wav'a dönüştürülemedi",
+                    f"  - ffmpeg çıktısı (son kısım):\n{result.stderr.strip()[-1500:]}")
 
-def main():
+
+# --- Hata/atlama raporu ve log dosyasi ------------------------------------
+# Her calistirmada, bir dosya atlandiginda ya da hata verdiginde ayrintilar
+# hem terminale yazilir hem de bu listede toplanir; calistirma bitince
+# (sorun varsa) proje klasorundeki mmsaligner.log dosyasina yazilir.
+_problems = []
+
+
+def _report(kind, name, message, details=""):
+    """Bir sorunu terminale yazar ve log icin kaydeder. kind: "ATLANDI",
+    "HATA" ya da "UYARI"; name: ilgili dosyanin taban adi (ya da "-")."""
+    print(f"[{kind}] '{name}': {message}")
+    if details:
+        print(details)
+    _problems.append({"kind": kind, "name": name, "message": message, "details": details})
+
+
+def _setup_console():
+    """Windows konsolunun varsayilan kod sayfasi (orn. cp1254/cp857) bazi
+    karakterleri (orn. €, emoji) basamaz ve print() UnicodeEncodeError ile
+    programi durdurur; ciktiyi UTF-8'e zorlayip basilamayan karakterleri
+    '?' ile degistirerek bunu onler (Python 3.7+)."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+
+def _write_log(started_at, total, succeeded):
+    """Sorun varsa mmsaligner.log dosyasini (UTF-8) yazar. Onceki
+    calistirmadan kalan log her calistirmanin basinda silinir; boylece
+    log dosyasi varsa, her zaman SON calistirmaya aittir."""
+    if not _problems:
+        return
+    with open(LOG_PATH, "w", encoding="utf-8") as f:
+        f.write("mms_aligner hata/uyarı raporu\n")
+        f.write(f"Tarih: {started_at:%Y-%m-%d %H:%M:%S}\n")
+        f.write(f"Python: {sys.version.split()[0]}  Platform: {sys.platform}\n")
+        f.write(f"Toplam: {total}  Başarılı: {len(succeeded)}  "
+                f"Sorunlu: {len({p['name'] for p in _problems if p['kind'] != 'UYARI'})}  "
+                f"Uyarı: {sum(1 for p in _problems if p['kind'] == 'UYARI')}\n")
+        f.write("=" * 70 + "\n")
+        for p in _problems:
+            f.write(f"\n[{p['kind']}] {p['name']}: {p['message']}\n")
+            if p["details"]:
+                f.write(p["details"].rstrip() + "\n")
+    print(f"\n[LOG] Ayrıntılar şu dosyaya yazıldı: {LOG_PATH}")
+
+
+def _run():
     if not os.path.isdir(INPUT_DIR):
-        print(f"[HATA] '{INPUT_DIR}' klasörü bulunamadı! İçine hizalanacak .wav dosyalarını ve"
-              f" her biriyle aynı adı taşıyan .txt transkriptlerini koyun.")
-        sys.exit(1)
+        _report("HATA", "-", f"'{INPUT_DIR}' klasörü bulunamadı! İçine hizalanacak .wav "
+                             f"dosyalarını ve her biriyle aynı adı taşıyan .txt transkriptlerini koyun.")
+        return 1, 0, []
 
     _convert_other_formats(INPUT_DIR)
 
     wav_paths = sorted(glob.glob(os.path.join(INPUT_DIR, "*.wav")))
     if not wav_paths:
-        print(f"[HATA] '{INPUT_DIR}' klasöründe hiç .wav dosyası bulunamadı!")
-        sys.exit(1)
+        _report("HATA", "-", f"'{INPUT_DIR}' klasöründe hiç .wav dosyası bulunamadı!")
+        return 1, 0, []
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -991,13 +1257,13 @@ def main():
         output_path = os.path.join(OUTPUT_DIR, base_name + ".TextGrid")
 
         if not os.path.exists(text_path):
-            print(f"[ATLANDI] '{base_name}': eşleşen transkript '{base_name}.txt' bulunamadı.")
-            failed.append((base_name, "transkript bulunamadı"))
+            reason = f"eşleşen transkript '{base_name}.txt' bulunamadı"
+            _report("ATLANDI", base_name, reason)
+            failed.append((base_name, reason))
             continue
 
         try:
-            with open(text_path, "r", encoding="utf-8") as f:
-                text_content = f.read().strip()
+            text_content = _read_transcript(text_path)
 
             if aligner is None:
                 aligner = DynamicMMSAligner()
@@ -1006,10 +1272,26 @@ def main():
             chars, syllables, words, duration = aligner.align(wav_path, text_content)
             export_to_textgrid(chars, syllables, words, text_content, duration, output_path=output_path)
             succeeded.append(base_name)
+            if aligner.last_long_words:
+                _report("UYARI", base_name,
+                        "normalden belirgin şekilde uzun hizalanmış kelime(ler) var; transkriptte bu "
+                        "kelimelerin çevresinde eksik bir bölüm olabilir (Praat'ta kontrol edin)",
+                        _format_long_words(aligner.last_long_words))
+            for e in aligner.last_edge_speech:
+                _report("UYARI", base_name,
+                        f"kaydın {e['where']} transkriptte olmayan konuşma olabilir",
+                        f"  - {e['start']:.3f}–{e['end']:.3f} sn arası etiketsiz bırakıldı, ama bu aralığın "
+                        f"{e['voiced']:.2f} sn'si sesli (vad_db_threshold'un üstünde)")
+        except TranscriptError as e:
+            _report("ATLANDI", base_name, e.summary,
+                    f"  - Transkript: {os.path.basename(text_path)}\n{e.details}" if e.details else "")
+            failed.append((base_name, e.summary))
         except Exception as e:
-            print(f"[HATA] '{base_name}' hizalanamadı: {e}")
-            failed.append((base_name, str(e)))
-            continue
+            reason = f"{type(e).__name__}: {e}"
+            print(f"[HATA] '{base_name}' hizalanamadı: {reason}")
+            _problems.append({"kind": "HATA", "name": base_name, "message": f"hizalanamadı: {reason}",
+                              "details": traceback.format_exc()})
+            failed.append((base_name, reason))
 
     print("\n==========================================")
     print(f"Toplam: {len(wav_paths)}  Başarılı: {len(succeeded)}  Başarısız/atlandı: {len(failed)}")
@@ -1017,7 +1299,35 @@ def main():
         print("Başarısız/atlanan dosyalar:")
         for base_name, reason in failed:
             print(f"  - {base_name}: {reason}")
+    warned = sorted({p["name"] for p in _problems if p["kind"] == "UYARI" and p["name"] in succeeded})
+    if warned:
+        print(f"Uyarı verilen (oluşturuldu, ama kontrol edin): {', '.join(warned)}")
     print("==========================================")
+    return 0, len(wav_paths), succeeded
+
+
+def main():
+    _setup_console()
+    started_at = datetime.now()
+    if os.path.exists(LOG_PATH):
+        try:
+            os.remove(LOG_PATH)
+        except OSError:
+            pass
+
+    exit_code, total, succeeded = 1, 0, []
+    try:
+        exit_code, total, succeeded = _run()
+    except BaseException as e:
+        # Beklenmeyen (dosya dongusu disindaki) hatalar ve Ctrl+C de log'a yazilir.
+        _problems.append({"kind": "HATA", "name": "-",
+                          "message": f"program beklenmedik şekilde durdu: {type(e).__name__}: {e}",
+                          "details": traceback.format_exc()})
+        raise
+    finally:
+        _write_log(started_at, total, succeeded)
+    sys.exit(exit_code)
+
 
 if __name__ == "__main__":
     main()

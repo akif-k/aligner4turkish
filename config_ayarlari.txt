@@ -130,3 +130,45 @@ Bir ayari degistirdikten sonra SONUCU GORMEK icin, mmsaligner.py'yi
 tekrar calistirip output/ klasorundeki ilgili .TextGrid dosyasini
 Praat'ta (ya da bir metin editorunde) tekrar acmaniz yeterlidir - eski
 dosyanin uzerine yazilir.
+
+6) long_word_warning_factor (varsayilan: 1.8)
+------------------------------------------------------------------------
+NE ISE YARAR: Transkriptin ORTASINDA eksik bir bolum varsa (seste
+konusulan ama .txt'de yazilmayan kelimeler), hizalama bu konusmayi
+komsu kelimelere yayar ve o kelimeler anormal UZUN gorunur. Program
+her kelimenin konusma suresini (gercek sessizlikler/duraksamalar
+HARIC) harf sayisina boler ve dosyanin kendi ortalama hiziyla
+(medyan) karsilastirir; beklenenin bu kat sayisindan daha uzun olan
+kelimeler icin terminale ve mmsaligner.log'a [UYARI] yazar. TextGrid
+yine olusturulur; uyari sadece "Praat'ta bu noktayi kontrol edin"
+anlamina gelir.
+    Ornek: [UYARI] 'kayit': normalden belirgin sekilde uzun ...
+      - "kapıya": 1.239–2.121 sn arasi (... 1.9 kat)
+
+NE ZAMAN DEGISTIRMELI:
+- Transkript dogru oldugu halde uyari aliyorsaniz (orn. konusmaci
+  bazi kelimeleri cok uzatarak/heceleyerek okuyor, "eee" gibi
+  duraksama sesleri var), degeri YUKSELTIN (orn. 2.2, 2.5).
+- Eksik bolumleri kacirdigini dusunuyorsaniz DUSURUN (orn. 1.5);
+  ancak 1.4'un altinda dogru transkriptlerde de uyari gorulebilir.
+- Kontrolu tamamen kapatmak icin 0 yapin.
+
+SINIRLAR: Tek bir KISA kelimenin (orn. "şu", "ve") eksik olmasi
+genellikle yakalanamaz (komsu kelimeyi yeterince uzatmaz). Dosyada 5'ten
+az kelime varsa kontrol yapilmaz.
+
+7) edge_speech_warning_ms (varsayilan: 400.0)
+------------------------------------------------------------------------
+NE ISE YARAR: Transkriptin BASINDA ya da SONUNDA eksik bir bolum
+varsa, hizalama o konusmayi kaydin basindaki/sonundaki etiketsiz ("")
+"sessizlik" araligina koyar - yani uzun kelime kontrolu bunu goremez.
+Bu ayar, o etiketsiz aralikta VAD'a gore (bkz. vad_db_threshold)
+SESLI olan toplam surenin kac milisaniyeyi asinca [UYARI] verilecegini
+belirler.
+
+NE ZAMAN DEGISTIRMELI:
+- Kaydin basinda/sonunda konusma olmadigi halde uyari aliyorsaniz
+  (orn. uzun nefes, gurultu, mikrofon tıkırtısı, muzik), degeri
+  YUKSELTIN (orn. 800, 1500) ya da kayit gurultuluyse once
+  vad_db_threshold'u dusurun.
+- Kontrolu tamamen kapatmak icin 0 yapin.

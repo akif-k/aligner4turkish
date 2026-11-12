@@ -33,6 +33,7 @@ DEFAULT_CONFIG = {
     "syllable_intensity_dip_db": 2.0,
     "long_word_warning_factor": 1.8,
     "edge_speech_warning_ms": 400.0,
+    "long_audio_warning_sec": 600.0,
 }
 
 
@@ -1147,6 +1148,29 @@ OTHER_AUDIO_EXTENSIONS = {
 }
 
 
+def _warn_if_long_audio(wav_path, base_name):
+    """Ses suresi config'teki long_audio_warning_sec'i asiyorsa, hizalama
+    BASLAMADAN once uyari verir (bellek yetmeyip program cokse bile uyari
+    terminalde/log'da kalsin diye). Hizalamanin (forced_align) bellek
+    ihtiyaci kabaca sure x transkript uzunlugu ile, yani surenin karesiyle
+    buyur; ayrica uzun kayitlarda bir kayma sonrasina yayilabilir. Sure
+    sf.info ile dosya basligindan okunur (ses verisi yuklenmez); okunamazsa
+    kontrol sessizce atlanir (hata zaten align() icinde raporlanir)."""
+    limit = load_config().get("long_audio_warning_sec")
+    if not limit or limit <= 0:
+        return
+    try:
+        duration = sf.info(wav_path).duration
+    except Exception:
+        return
+    if duration > limit:
+        _report("UYARI", base_name,
+                f"ses dosyası uzun ({duration / 60:.1f} dk; eşik {limit / 60:.1f} dk): hizalama çok "
+                f"bellek kullanabilir ve uzun sürebilir, bir yerdeki kayma sonrasına yayılabilir",
+                "  - Öneri: kaydı (ve transkripti) 5–10 dakikalık parçalara bölün.\n"
+                "  - Eşik config.json'daki long_audio_warning_sec ile değiştirilebilir (0 = kapalı).")
+
+
 def _convert_other_formats(input_dir):
     """input_dir icindeki OTHER_AUDIO_EXTENSIONS'taki formatlari 16 kHz/
     16 bit/mono PCM .wav'a cevirip AYNI input_dir icine yazar (ffmpeg
@@ -1269,6 +1293,7 @@ def _run():
                 aligner = DynamicMMSAligner()
 
             print(f"\n[İŞLENİYOR] {base_name}")
+            _warn_if_long_audio(wav_path, base_name)
             chars, syllables, words, duration = aligner.align(wav_path, text_content)
             export_to_textgrid(chars, syllables, words, text_content, duration, output_path=output_path)
             succeeded.append(base_name)

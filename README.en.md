@@ -140,6 +140,16 @@ usually not caught, and speakers who drag words out or noisy recordings
 can trigger false warnings. See [config_ayarlari.txt](config_ayarlari.txt)
 (Turkish) for the thresholds and how to turn them off.
 
+### Long audio warning
+
+If an audio file is longer than 10 minutes, a `[UYARI]` (warning) is
+printed before alignment starts (the file is still processed). The
+memory needed for alignment grows roughly with the square of the
+duration; very long recordings can need several GB of memory, and a
+drift at one point can carry over to the rest. Splitting recordings
+(and transcripts) into 5–10 minute parts is recommended. The threshold
+is set by `long_audio_warning_sec` (0 = off).
+
 ### Log file
 
 Whenever a file is skipped, fails or gets a warning, the details are also written to

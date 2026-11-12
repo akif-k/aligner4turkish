@@ -137,6 +137,15 @@ eksikliği genellikle yakalanamaz; kelimeleri çok uzatarak okuyan
 konuşmacılarda ya da gürültülü kayıtlarda yanlış uyarı görülebilir.
 Eşikler ve kapatma için bkz. [config_ayarlari.txt](config_ayarlari.txt).
 
+### Uzun ses dosyası uyarısı
+
+Ses dosyası 10 dakikadan uzunsa, hizalama başlamadan önce `[UYARI]`
+yazılır (dosya yine işlenir). Hizalamanın bellek ihtiyacı kabaca
+sürenin karesiyle büyür; çok uzun kayıtlar birkaç GB bellek isteyebilir
+ve bir yerdeki kayma sonrasına yayılabilir. Kayıtları (ve transkriptleri)
+5–10 dakikalık parçalara bölmeniz önerilir. Eşik `long_audio_warning_sec`
+ile değiştirilebilir (0 = kapalı).
+
 ### Log dosyası
 
 Bir dosya atlandığında, hata verdiğinde ya da uyarı aldığında, ayrıntılar terminale ek

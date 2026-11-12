@@ -172,3 +172,22 @@ NE ZAMAN DEGISTIRMELI:
   YUKSELTIN (orn. 800, 1500) ya da kayit gurultuluyse once
   vad_db_threshold'u dusurun.
 - Kontrolu tamamen kapatmak icin 0 yapin.
+
+8) long_audio_warning_sec (varsayilan: 600.0 = 10 dakika)
+------------------------------------------------------------------------
+NE ISE YARAR: Ses dosyasinin suresi bu degeri (saniye) asarsa,
+hizalama BASLAMADAN once terminale ve mmsaligner.log'a [UYARI] yazilir.
+Dosya yine islenir; uyari sadece bilgilendirme amaclidir.
+    Ornek: [UYARI] 'kayit': ses dosyası uzun (24.5 dk; eşik 10.0 dk) ...
+
+NEDEN: Hizalamanin bellek ihtiyaci kabaca surenin KARESIYLE buyur
+(30 dakikalik bir kayit birkac GB, 1 saatlik bir kayit 10 GB'in
+uzerinde bellek isteyebilir); bellek yetmezse program yavaslayabilir
+ya da durabilir. Ayrica uzun kayitlarda bir noktadaki kayma sonrasina
+yayilabilir. Bu yuzden kaydi (ve transkripti) 5-10 dakikalik
+parcalara bolmek, guclu bir bilgisayarda bile daha iyi sonuc verir.
+
+NE ZAMAN DEGISTIRMELI:
+- Bilgisayarinizda bol bellek varsa ve uzun dosyalari sorunsuz
+  isleyebildiginizi gorduyseniz, degeri YUKSELTIN (orn. 1200, 1800).
+- Kontrolu tamamen kapatmak icin 0 yapin.

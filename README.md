@@ -184,7 +184,9 @@ kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
   `test_cases.txt`) depodan çıkarıldı. Transkriptte eksik bölüm
   olabileceğini gösteren uyarılar eklendi (anormal uzun kelimeler ve
   kaydın başında/sonunda etiketsiz kalan konuşma; ayarlar
-  `long_word_warning_factor`, `edge_speech_warning_ms`).
+  `long_word_warning_factor`, `edge_speech_warning_ms`). 10 dakikadan
+  uzun ses dosyaları için hizalama öncesinde uyarı eklendi (ayar
+  `long_audio_warning_sec`).
 - **v1.0.2** — README'ye bu Sürüm Notları bölümü eklendi.
 - **v1.0.1** — Belge düzeltmeleri: ctc-forced-aligner atıf ifadesi
   düzeltildi (algoritma o projeden "port edilmedi", sadece genel

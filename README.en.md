@@ -190,7 +190,9 @@ it was written independently. See
   `test_cases.txt`) were removed from the repository. Added warnings
   that the transcript may be missing a part (abnormally long words, and
   speech left unlabeled at the start/end of the recording; settings
-  `long_word_warning_factor`, `edge_speech_warning_ms`).
+  `long_word_warning_factor`, `edge_speech_warning_ms`). Added a
+  warning before alignment for audio files longer than 10 minutes
+  (setting `long_audio_warning_sec`).
 - **v1.0.2** — Added a Release Notes section to the README.
 - **v1.0.1** — Documentation fixes: corrected the wording of the
   ctc-forced-aligner attribution (the algorithm was not "ported" from

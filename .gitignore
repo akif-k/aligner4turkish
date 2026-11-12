@@ -30,3 +30,13 @@ __pycache__/
 # Isletim sistemi
 .DS_Store
 Thumbs.db
+
+# Yerel/gelistirici dosyalari (depoya dahil edilmez)
+CLAUDE.md
+clean.bat
+clean.sh
+run_tests.py
+test_cases.txt
+
+# Calisma gunlugu (hata/atlanan dosya raporu, her calistirmada yeniden yazilir)
+mmsaligner.log

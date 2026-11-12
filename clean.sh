@@ -27,6 +27,7 @@ for d in "${TARGET_DIRS[@]}"; do
     echo "  - $SCRIPT_DIR/$d/*"
 done
 echo "  - __pycache__ klasorleri (proje icinde)"
+echo "  - mmsaligner.log (varsa)"
 
 if [ "$YES" -ne 1 ]; then
     read -r -p "Devam edilsin mi? [e/H] " reply
@@ -42,5 +43,6 @@ for d in "${TARGET_DIRS[@]}"; do
 done
 
 find "$SCRIPT_DIR" -type d -name "__pycache__" -exec rm -rf {} +
+rm -f "$SCRIPT_DIR/mmsaligner.log"
 
 echo "Temizlendi."

@@ -61,12 +61,9 @@ python mmsaligner.py        # ya da: ./run.sh  (Windows'ta run.bat)
 mms_aligner/
 ├── mmsaligner.py          ana program (toplu forced alignment + TextGrid yazma)
 ├── run.bat / .sh          kolay başlatma (Windows / Linux-macOS)
-├── clean.bat / .sh        output/ ve __pycache__ temizleme
-├── run_tests.py           hece motoru regresyon testleri
 ├── environment.yml        conda ortamı tanımı
 ├── config.json            VAD/boşluk/hece ayarları (bkz. config_ayarlari.txt)
 ├── syllable_rules.json    Türkçe hece kuralları
-├── test_cases.txt         run_tests.py için beklenen heceleme örnekleri
 ├── input/                 girdi: wav + eşleşen txt çiftleri (örnek dahil)
 ├── output/                çıktı: üretilen .TextGrid dosyaları
 ├── models/                indirilen model ağırlıkları (depoya dahil değil)
@@ -83,19 +80,79 @@ Bu README bir özet niteliğindedir; ayrıntılı (Türkçe) belgeler:
 | [config_ayarlari.txt](config_ayarlari.txt) | `config.json` ayarları için pratik, sorun-giderme odaklı rehber |
 | [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) | Kullanılan algoritma/model/paketlerin lisans bilgileri (**model lisansı için mutlaka okuyun**) |
 
-## Geliştirme
+## Sorun giderme
 
-Hece kurallarında (`syllable_rules.json`) veya hece motorunda değişiklik
-yaparken, önceden doğrulanmış kelimelerin bozulmadığından emin olmak
-için bir regresyon test seti bulunur:
+### Sözlükte olmayan karakterler
 
-```bash
-python run_tests.py
+Transkriptte modelin sözlüğünde karşılığı olmayan karakterler varsa
+(ör. `&`, `€`, emoji, başka alfabelerin harfleri, sıfır genişlikli boşluk
+gibi görünmeyen karakterler), o dosya hizalanmadan atlanır ve terminalde
+sorunlu karakterler, transkriptteki konumlarıyla birlikte listelenir:
+
+```
+[ATLANDI] 'sample': transkriptte model sözlüğünde olmayan karakter(ler) var: '&' (U+0026 AMPERSAND)
+  - Transkript: sample.txt
+  - '&' (U+0026 AMPERSAND): 1 kez; konum: satır 1 sütun 12; kelimeler: &
 ```
 
-Yeni bir test eklemek için [test_cases.txt](test_cases.txt) dosyasına
-`kelime -> hece1,hece2,...` biçiminde bir satır ekleyin (dosyanın
-başındaki notasyon açıklamasına bakın).
+Her karakter için Unicode kod noktası ve adı, kaç kez geçtiği, hangi
+satır ve sütunda bulunduğu ve hangi kelimelerde geçtiği gösterilir
+(görünmeyen karakterler `(görünmez)` ve `U+XXXX` koduyla yazılır).
+
+Çözüm için bu karakterleri transkriptten silin ya da okunuşlarıyla
+yazın (ör. `&` → `ve`). Rakamlar, `%` ve `/` modelin sözlüğünde bulunur,
+ancak okunuşa göre hizalama için sayıları yazıyla yazmak genellikle
+daha iyi sonuç verir.
+
+### UTF-8 olmayan transkriptler
+
+Transkriptler UTF-8 olarak kaydedilmelidir (BOM'lu UTF-8 de olur).
+Dosya başka bir kodlamayla (ör. Windows'taki "ANSI"/Windows-1254)
+kaydedilmişse, dosya atlanır ve çözülemeyen baytın satır/sütun konumu
+ile değeri yazdırılır. Dosyayı metin düzenleyicide açıp UTF-8 olarak
+kaydetmeniz yeterlidir.
+
+### Metinde eksik bölüm uyarısı
+
+Transkriptte seste konuşulan bir bölüm eksikse program hata vermez
+(TextGrid yine oluşturulur), ama o bölümün çevresindeki zamanlamalar
+yanlış çıkar. Bunu fark etmeniz için iki kontrol yapılır ve sorun
+görülürse terminale ve `mmsaligner.log` dosyasına `[UYARI]` yazılır:
+
+```
+[UYARI] 'kayit': normalden belirgin şekilde uzun hizalanmış kelime(ler) var; transkriptte bu kelimelerin çevresinde eksik bir bölüm olabilir (Praat'ta kontrol edin)
+  - "kopmuş": 2.121–3.141 sn arası (konuşma 1.02 sn; bu dosyanın hızına göre beklenen ~0.45 sn, 2.3 kat)
+[UYARI] 'kayit': kaydın sonunda transkriptte olmayan konuşma olabilir
+  - 5.020–6.002 sn arası etiketsiz bırakıldı, ama bu aralığın 0.61 sn'si sesli (vad_db_threshold'un üstünde)
+```
+
+- **Ortada eksik bölüm:** Metinde olmayan konuşma komşu kelimelere
+  yayıldığı için o kelimeler, dosyanın kendi konuşma hızına göre
+  anormal uzun görünür (`long_word_warning_factor`).
+- **Başta/sonda eksik bölüm:** Kaydın başındaki/sonundaki etiketsiz
+  aralıkta konuşma enerjisi varsa uyarı verilir (`edge_speech_warning_ms`).
+
+Bu uyarılar bir ipucudur, kesin tespit değildir: tek bir kısa kelimenin
+eksikliği genellikle yakalanamaz; kelimeleri çok uzatarak okuyan
+konuşmacılarda ya da gürültülü kayıtlarda yanlış uyarı görülebilir.
+Eşikler ve kapatma için bkz. [config_ayarlari.txt](config_ayarlari.txt).
+
+### Uzun ses dosyası uyarısı
+
+Ses dosyası 10 dakikadan uzunsa, hizalama başlamadan önce `[UYARI]`
+yazılır (dosya yine işlenir). Hizalamanın bellek ihtiyacı kabaca
+sürenin karesiyle büyür; çok uzun kayıtlar birkaç GB bellek isteyebilir
+ve bir yerdeki kayma sonrasına yayılabilir. Kayıtları (ve transkriptleri)
+5–10 dakikalık parçalara bölmeniz önerilir. Eşik `long_audio_warning_sec`
+ile değiştirilebilir (0 = kapalı).
+
+### Log dosyası
+
+Bir dosya atlandığında, hata verdiğinde ya da uyarı aldığında, ayrıntılar terminale ek
+olarak proje klasöründeki `mmsaligner.log` dosyasına da yazılır
+(beklenmeyen hatalar için Python hata dökümü dahil). Bu dosya her
+çalıştırmanın başında silinir ve yalnızca sorun olduğunda yeniden
+oluşturulur; yani varsa, her zaman son çalıştırmaya aittir.
 
 ## Lisans
 
@@ -114,6 +171,22 @@ kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
 
 ## Sürüm Notları
 
+- **v1.0.3** — Hata raporlama iyileştirmeleri: model sözlüğünde
+  olmayan karakterler (görünmeyenler dahil) artık terminalde Unicode
+  adı ve transkriptteki satır/sütun konumuyla gösteriliyor ve dosya
+  anlaşılmaz bir hata yerine açık bir mesajla atlanıyor; UTF-8 olmayan
+  transkriptlerde çözülemeyen baytın değeri ve konumu bildiriliyor;
+  atlanan/hatalı dosyaların ayrıntıları proje klasöründeki
+  `mmsaligner.log` dosyasına yazılıyor. BOM'lu UTF-8 transkriptler
+  (Windows Not Defteri) artık sorunsuz okunuyor; Windows konsolunda
+  bazı karakterler (ör. `€`, emoji) yazdırılırken programın çökmesi
+  önlendi. Geliştirici dosyaları (`clean.*`, `run_tests.py`,
+  `test_cases.txt`) depodan çıkarıldı. Transkriptte eksik bölüm
+  olabileceğini gösteren uyarılar eklendi (anormal uzun kelimeler ve
+  kaydın başında/sonunda etiketsiz kalan konuşma; ayarlar
+  `long_word_warning_factor`, `edge_speech_warning_ms`). 10 dakikadan
+  uzun ses dosyaları için hizalama öncesinde uyarı eklendi (ayar
+  `long_audio_warning_sec`).
 - **v1.0.2** — README'ye bu Sürüm Notları bölümü eklendi.
 - **v1.0.1** — Belge düzeltmeleri: ctc-forced-aligner atıf ifadesi
   düzeltildi (algoritma o projeden "port edilmedi", sadece genel

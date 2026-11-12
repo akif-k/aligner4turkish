@@ -17,8 +17,8 @@ authors:
 license: GPL-3.0-only
 repository-code: "https://github.com/akif-k/aligner4turkish"
 doi: 10.5281/zenodo.22164016
-version: "1.0.2"
-date-released: "2026-08-29"
+version: "1.0.3"
+date-released: "2026-11-12"
 keywords:
   - forced alignment
   - speech processing

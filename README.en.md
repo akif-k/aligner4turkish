@@ -59,12 +59,9 @@ Output for `input/sample.wav` is written to `output/sample.TextGrid`.
 mms_aligner/
 ├── mmsaligner.py          main program (batch forced alignment + TextGrid writing)
 ├── run.bat / .sh          easy launcher (Windows / Linux-macOS)
-├── clean.bat / .sh        cleans output/ and __pycache__
-├── run_tests.py           regression tests for the syllable engine
 ├── environment.yml        conda environment definition
 ├── config.json            VAD/gap/syllable settings (see config_ayarlari.txt)
 ├── syllable_rules.json    Turkish syllabification rules
-├── test_cases.txt         expected-syllabification examples for run_tests.py
 ├── input/                 input: wav + matching txt pairs (sample included)
 ├── output/                output: generated .TextGrid files
 ├── models/                downloaded model weights (not included in the repo)
@@ -81,19 +78,85 @@ This README is a summary; the detailed docs are in Turkish:
 | [config_ayarlari.txt](config_ayarlari.txt) | Practical, troubleshooting-oriented guide to `config.json` settings |
 | [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) | License/attribution info for the algorithm, model, and packages used (**read this for the model's license**) |
 
-## Development
+## Troubleshooting
 
-When changing the syllabification rules (`syllable_rules.json`) or the
-syllable engine, a regression test suite lets you confirm previously
-validated words still come out right:
+### Characters missing from the model's vocabulary
 
-```bash
-python run_tests.py
+If the transcript contains characters that have no entry in the model's
+vocabulary (e.g. `&`, `€`, emoji, letters from other scripts, invisible
+characters such as a zero-width space), that file is skipped without
+aligning and the offending characters are listed in the terminal along
+with where they occur in the transcript (the program's messages are in
+Turkish):
+
+```
+[ATLANDI] 'sample': transkriptte model sözlüğünde olmayan karakter(ler) var: '&' (U+0026 AMPERSAND)
+  - Transkript: sample.txt
+  - '&' (U+0026 AMPERSAND): 1 kez; konum: satır 1 sütun 12; kelimeler: &
 ```
 
-To add a new test, add a `word -> syllable1,syllable2,...` line to
-[test_cases.txt](test_cases.txt) (see the notation notes at the top of
-that file).
+For each character it shows the Unicode code point and name, how many
+times it occurs (`kez`), its line (`satır`) and column (`sütun`), and
+which words contain it (`kelimeler`); invisible characters are shown as
+`(görünmez)` with their `U+XXXX` code.
+
+To fix it, delete these characters from the transcript or write out
+how they are read (e.g. `&` → `ve`). Digits, `%` and `/` are in the model's
+vocabulary, but writing numbers out in words usually aligns better with
+how they are pronounced.
+
+### Transcripts that are not UTF-8
+
+Transcripts must be saved as UTF-8 (UTF-8 with a BOM is fine too). If a
+file was saved in another encoding (e.g. "ANSI"/Windows-1254 on
+Windows), it is skipped and the line/column and value of the byte that
+could not be decoded are printed. Re-save the file as UTF-8 in a text
+editor.
+
+### Missing-part warning
+
+If part of what is spoken is missing from the transcript, the program
+does not fail (the TextGrid is still written), but the timings around
+that part come out wrong. To help you spot this, two checks run and, if
+something looks off, a `[UYARI]` (warning) is printed to the terminal
+and written to `mmsaligner.log`:
+
+```
+[UYARI] 'kayit': normalden belirgin şekilde uzun hizalanmış kelime(ler) var; transkriptte bu kelimelerin çevresinde eksik bir bölüm olabilir (Praat'ta kontrol edin)
+  - "kopmuş": 2.121–3.141 sn arası (konuşma 1.02 sn; bu dosyanın hızına göre beklenen ~0.45 sn, 2.3 kat)
+[UYARI] 'kayit': kaydın sonunda transkriptte olmayan konuşma olabilir
+  - 5.020–6.002 sn arası etiketsiz bırakıldı, ama bu aralığın 0.61 sn'si sesli (vad_db_threshold'un üstünde)
+```
+
+- **Missing part in the middle:** untranscribed speech gets spread over
+  the neighbouring words, so they look abnormally long relative to the
+  file's own speaking rate (`long_word_warning_factor`).
+- **Missing part at the start/end:** a warning is given if the unlabeled
+  interval at the start/end of the recording contains speech energy
+  (`edge_speech_warning_ms`).
+
+These warnings are hints, not proof: a single missing short word is
+usually not caught, and speakers who drag words out or noisy recordings
+can trigger false warnings. See [config_ayarlari.txt](config_ayarlari.txt)
+(Turkish) for the thresholds and how to turn them off.
+
+### Long audio warning
+
+If an audio file is longer than 10 minutes, a `[UYARI]` (warning) is
+printed before alignment starts (the file is still processed). The
+memory needed for alignment grows roughly with the square of the
+duration; very long recordings can need several GB of memory, and a
+drift at one point can carry over to the rest. Splitting recordings
+(and transcripts) into 5–10 minute parts is recommended. The threshold
+is set by `long_audio_warning_sec` (0 = off).
+
+### Log file
+
+Whenever a file is skipped, fails or gets a warning, the details are also written to
+`mmsaligner.log` in the project folder, in addition to the terminal
+(including the Python traceback for unexpected errors). The file is
+deleted at the start of every run and only recreated when something
+went wrong, so if it exists it always belongs to the latest run.
 
 ## License
 
@@ -110,6 +173,37 @@ approach of the forced alignment algorithm was inspired by
 (BSD License), though no code or package from that project is used —
 it was written independently. See
 [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for details.
+
+## Release Notes
+
+- **v1.0.3** — Error-reporting improvements: characters missing from
+  the model's vocabulary (including invisible ones) are now shown in
+  the terminal with their Unicode name and their line/column position
+  in the transcript, and the file is skipped with a clear message
+  instead of an obscure error; for transcripts that are not UTF-8, the
+  value and position of the byte that could not be decoded are
+  reported; details of skipped/failed files are written to
+  `mmsaligner.log` in the project folder. UTF-8 transcripts with a BOM
+  (Windows Notepad) are now read correctly; a crash when printing
+  certain characters (e.g. `€`, emoji) to the Windows console was
+  fixed. Developer-only files (`clean.*`, `run_tests.py`,
+  `test_cases.txt`) were removed from the repository. Added warnings
+  that the transcript may be missing a part (abnormally long words, and
+  speech left unlabeled at the start/end of the recording; settings
+  `long_word_warning_factor`, `edge_speech_warning_ms`). Added a
+  warning before alignment for audio files longer than 10 minutes
+  (setting `long_audio_warning_sec`).
+- **v1.0.2** — Added a Release Notes section to the README.
+- **v1.0.1** — Documentation fixes: corrected the wording of the
+  ctc-forced-aligner attribution (the algorithm was not "ported" from
+  that project, only inspired by its general approach); added a DOI
+  badge and keywords to the READMEs; updated CITATION.cff.
+- **v1.0.0** — Initial release: Turkish forced alignment with the
+  `facebook/mms-1b-fl102` model; produces a Praat TextGrid with
+  letter/syllable/word/full-text tiers.
+
+For all releases, see
+[GitHub Releases](https://github.com/akif-k/aligner4turkish/releases).
 
 ## Citation
 

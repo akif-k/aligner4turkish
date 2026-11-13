@@ -344,7 +344,8 @@ def _add_edge_silence(items, total_duration):
 
 
 # --- Hece (syllables) tier motoru -----------------------------------
-# ~/ipa_verbatim projesindeki syllables.py'nin (rules.json'daki IPA
+# ipa4turkish projesindeki (https://github.com/akif-k/ipa4turkish)
+# syllables.py'nin (rules.json'daki IPA
 # sembolu -> hece degeri tablosunu yorumlayan genel motor) Turkce duz
 # yazim harflerine uyarlanmis portu. Algoritma birebir aynidir; sadece
 # kural tablosu (syllable_rules.json, IPA yerine Turkce harflerle
@@ -376,7 +377,7 @@ def _classify_syllable_value(text, rules):
 def _parse_syllable_types(rules):
     """rules['syllable_types_priority'] listesini (orn. ["CV","CVC",...])
     ayristirir; her kalip tam olarak bir 'V' icermelidir. Donen deger:
-    (allowed_pairs, max_onset, max_coda) - bkz. ipa_verbatim/syllables.py
+    (allowed_pairs, max_onset, max_coda) - bkz. ipa4turkish/syllables.py
     parse_syllable_types()."""
     allowed_pairs = set()
     for pattern in rules["syllable_types_priority"]:
@@ -443,7 +444,7 @@ def _assign_syllable_ids(chars, rules, intensity_arbiter=None):
     indeksini, ona eklenecek tureme unlusune (bkz. _epenthetic_vowel)
     esler - diger TUM hece disi/atanamamis semboller (VAD sessizligi
     dahil) bu sozlukte YER ALMAZ.
-    ipa_verbatim/syllables.py'nin assign_syllable_ids() fonksiyonunun
+    ipa4turkish/syllables.py'nin assign_syllable_ids() fonksiyonunun
     portudur; ANCAK onset secimi o projedeki "maksimal onset" ilkesinden
     farkli olarak `syllable_types_priority`'nin SIRASINI (CV/CVC/VC/CVCC
     -> CCVC/CCVCC) fiilen uygular: ONCE tek unsurlu (ya da onsetsiz) bir
@@ -1018,7 +1019,7 @@ class DynamicMMSAligner:
 
         # Tier "syllables": "segments" tier'inin (yukaridaki, tum bosluk/
         # sinir islemleri tamamlanmis hali) hece kurallarina (bkz.
-        # syllable_rules.json, ~/ipa_verbatim/syllables.py'nin Turkce
+        # syllable_rules.json, ipa4turkish/syllables.py'nin Turkce
         # harflerine uyarlanmis portu) gore gruplanmasidir. Kelime sinirini
         # gecip gecmeyecegi VAD'a gore belirlenir (bkz.
         # _build_syllable_tier_per_word).

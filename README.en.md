@@ -53,6 +53,18 @@ python mmsaligner.py        # or: ./run.sh  (run.bat on Windows)
 
 Output for `input/sample.wav` is written to `output/sample.TextGrid`.
 
+## Model and offline use
+
+On the first run, the `facebook/mms-1b-fl102` model (~4 GB) is
+downloaded from the Hugging Face Hub into the project's `models/`
+folder. On later runs the model and the Turkish language adapter are
+loaded straight from `models/` **without any network access**; if a
+file is missing, the program notices and downloads it.
+
+You can copy the `models/` folder as-is to another computer (e.g. one
+without internet access) and use the model there without downloading
+it again.
+
 ## Project contents
 
 ```
@@ -158,6 +170,26 @@ Whenever a file is skipped, fails or gets a warning, the details are also writte
 deleted at the start of every run and only recreated when something
 went wrong, so if it exists it always belongs to the latest run.
 
+### Other issues
+
+- **`ModuleNotFoundError: torch/torchaudio/transformers/soundfile`:**
+  make sure the `mms_aligner` conda environment is active
+  (`conda activate mms_aligner`).
+- **HTTPS/SSL error while downloading the model (Windows, git-bash):**
+  in some conda installs, `%CONDA_PREFIX%\etc\conda\activate.d\openssl_activate.sh`
+  points `SSL_CERT_FILE` to the non-existent
+  `${CONDA_PREFIX}/ssl/cacert.pem`; change that line to
+  `${CONDA_PREFIX}/Library/ssl/cacert.pem`.
+- **Garbled Turkish characters in the Windows console (e.g. `SE??M`):**
+  this only comes from the console code page; TextGrid files always
+  contain correct UTF-8. To fix the screen output, run `chcp 65001`
+  before starting the program.
+- **Another language:** the default language is Turkish
+  (`lang_code="tur"`). For another language, change the
+  `DynamicMMSAligner()` call in `main()` in `mmsaligner.py` to the
+  corresponding ISO 639-3 code (e.g. `DynamicMMSAligner(lang_code="eng")`).
+  The syllable tier still follows Turkish rules.
+
 ## License
 
 This project's own code is licensed under **GNU GPLv3** (see
@@ -176,6 +208,11 @@ it was written independently. See
 
 ## Release Notes
 
+- **v1.0.4** — Offline use: the model and the Turkish language
+  adapter are loaded without network access when they are complete in
+  `models/`; missing files are downloaded. Added a "Model and offline
+  use" section and more troubleshooting notes to the README; fixed the
+  sample transcript (`input/sample.txt`).
 - **v1.0.3** — Error-reporting improvements: characters missing from
   the model's vocabulary (including invisible ones) are now shown in
   the terminal with their Unicode name and their line/column position

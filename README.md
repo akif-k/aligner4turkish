@@ -55,6 +55,18 @@ python mmsaligner.py        # ya da: ./run.sh  (Windows'ta run.bat)
 
 Çıktı, `input/sample.wav` için `output/sample.TextGrid` olarak yazılır.
 
+## Model ve çevrimdışı kullanım
+
+İlk çalıştırmada `facebook/mms-1b-fl102` modeli (~4 GB) Hugging Face
+Hub'dan indirilip proje içindeki `models/` klasörüne kaydedilir.
+Sonraki çalıştırmalarda model ve Türkçe dil adaptörü **internete hiç
+bağlanılmadan** doğrudan `models/` klasöründen yüklenir; bir dosya
+eksikse program bunu fark edip eksik kısmı internetten indirir.
+
+`models/` klasörünü olduğu gibi başka bir bilgisayara (ör. internet
+erişimi olmayan bir makineye) kopyalayarak modeli yeniden indirmeden
+kullanabilirsiniz.
+
 ## Proje içeriği
 
 ```
@@ -154,6 +166,26 @@ olarak proje klasöründeki `mmsaligner.log` dosyasına da yazılır
 çalıştırmanın başında silinir ve yalnızca sorun olduğunda yeniden
 oluşturulur; yani varsa, her zaman son çalıştırmaya aittir.
 
+### Diğer sorunlar
+
+- **`ModuleNotFoundError: torch/torchaudio/transformers/soundfile`:**
+  `mms_aligner` conda ortamının etkin olduğundan emin olun
+  (`conda activate mms_aligner`).
+- **Model indirirken HTTPS/SSL hatası (Windows, git-bash):** Bazı conda
+  kurulumlarında `%CONDA_PREFIX%\etc\conda\activate.d\openssl_activate.sh`
+  dosyası `SSL_CERT_FILE` değişkenini var olmayan
+  `${CONDA_PREFIX}/ssl/cacert.pem` yoluna yönlendirir; bu satırı
+  `${CONDA_PREFIX}/Library/ssl/cacert.pem` olarak düzeltin.
+- **Windows konsolunda Türkçe karakterler bozuk görünüyor (ör. `SE??M`):**
+  Bu yalnızca konsolun kod sayfasından kaynaklanır, TextGrid dosyaları
+  her zaman doğru UTF-8 içerir. Ekran çıktısını düzeltmek için
+  çalıştırmadan önce `chcp 65001` komutunu verin.
+- **Başka bir dil:** Varsayılan dil Türkçedir (`lang_code="tur"`).
+  Başka bir dil için `mmsaligner.py` içindeki `main()` fonksiyonunda
+  `DynamicMMSAligner()` çağrısını ilgili ISO 639-3 koduyla değiştirin
+  (ör. `DynamicMMSAligner(lang_code="eng")`). Hece katmanı Türkçe
+  kurallarına göre çalışır.
+
 ## Lisans
 
 Bu projenin kendi kodu **GNU GPLv3** ile lisanslanmıştır (bkz.
@@ -171,6 +203,11 @@ kullanılmamıştır, bağımsız yazılmıştır). Ayrıntılar için
 
 ## Sürüm Notları
 
+- **v1.0.4** — Çevrimdışı kullanım: model ve Türkçe dil adaptörü
+  `models/` klasöründe eksiksiz varsa internete bağlanılmadan
+  yükleniyor; bir dosya eksikse internetten indiriliyor. README'ye
+  "Model ve çevrimdışı kullanım" bölümü ve ek sorun giderme notları
+  eklendi; örnek transkript (`input/sample.txt`) düzeltildi.
 - **v1.0.3** — Hata raporlama iyileştirmeleri: model sözlüğünde
   olmayan karakterler (görünmeyenler dahil) artık terminalde Unicode
   adı ve transkriptteki satır/sütun konumuyla gösteriliyor ve dosya

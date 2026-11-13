@@ -792,15 +792,36 @@ class DynamicMMSAligner:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.lang_code = lang_code
 
-        print(f"\n[MODEL] {self.model_id} yükleniyor ({self.device})...")
-        self.processor = AutoProcessor.from_pretrained(self.model_id, cache_dir=MODELS_DIR)
-        self.model = Wav2Vec2ForCTC.from_pretrained(self.model_id, cache_dir=MODELS_DIR).to(self.device)
+        # Cevrimdisi kullanim: model (ve dil adaptoru) models/ klasorunde
+        # eksiksiz varsa internete HIC baglanilmadan yuklenir; bir dosya
+        # eksikse (ya da models/ bos ise) Hugging Face Hub'dan indirilir.
+        try:
+            self._load_model(local_only=True)
+            print(f"\n[MODEL] {self.model_id} yerel models/ klasöründen yüklendi "
+                  f"({self.device}); internet bağlantısı gerekmedi.")
+        except Exception:
+            print(f"\n[MODEL] {self.model_id} models/ klasöründe bulunamadı ya da eksik; "
+                  f"internetten indiriliyor ({self.device})...")
+            self._load_model(local_only=False)
         self.model.eval()
 
+    def _load_model(self, local_only):
+        """Processor'u, modeli ve dil adaptorunu yukler. local_only=True
+        iken yalnizca models/ klasorundeki dosyalar kullanilir; herhangi
+        biri (adaptor dahil) eksikse istisna firlatilir."""
+        self.processor = AutoProcessor.from_pretrained(
+            self.model_id, cache_dir=MODELS_DIR, local_files_only=local_only)
+        self.model = Wav2Vec2ForCTC.from_pretrained(
+            self.model_id, cache_dir=MODELS_DIR, local_files_only=local_only).to(self.device)
         try:
             self.processor.tokenizer.set_target_lang(self.lang_code)
-            self.model.load_adapter(self.lang_code, cache_dir=MODELS_DIR)
+            self.model.load_adapter(self.lang_code, cache_dir=MODELS_DIR,
+                                    local_files_only=local_only)
         except Exception:
+            if local_only:
+                raise
+            # Cevrimici modda onceki davranis korunur (adaptor
+            # yuklenemezse varsayilan agirliklarla devam edilir).
             pass
 
     def _generate_emissions(self, waveform, window_length=30, context_length=2, batch_size=4):

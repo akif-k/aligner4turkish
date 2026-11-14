@@ -1,193 +1,193 @@
-MMS_ALIGNER - config.json AYARLARI REHBERI
+MMS_ALIGNER - config.json AYARLARI REHBERİ
 =============================================
 
-Bu dosya, config.json'daki her ayarin NE ISE YARADIGINI, HANGI BELIRTIYI
-GORDUGUNUZDE hangi yone degistirmeniz gerektigini ve pratik ornek
-degerleri anlatir; PRATIK/SORUN GIDERME odaklidir.
+Bu dosya, config.json'daki her ayarın NE İŞE YARADIĞINI, HANGİ BELİRTİYİ
+GÖRDÜĞÜNÜZDE hangi yöne değiştirmeniz gerektiğini ve pratik örnek
+değerleri anlatır; PRATİK/SORUN GİDERME odaklıdır.
 
-0) config.json nasil duzenlenir
+0) config.json nasıl düzenlenir
 ------------------------------------
-- Herhangi bir metin editorüyle (Not Defteri dahil) acip degerleri
-  degistirebilirsiniz. Gecerli bir JSON dosyasi olmalidir: sayilardan
-  sonra (SON satir haric) virgul, metin degerleri cift tirnak icinde.
-- Degisiklik yaptiktan sonra programi (run.bat ya da
-  "python mmsaligner.py") YENIDEN CALISTIRMANIZ yeterlidir; baska bir
-  islem gerekmez, dosya her calistirmada yeniden okunur.
-- Bir anahtari SILERSENIZ ya da dosyayi tamamen SILERSENIZ, o ayar
-  icin varsayilan deger kullanilir (program hata vermez).
-- Ayarlar TUM input/ klasorundeki dosyalara ayni sekilde uygulanir;
-  dosyaya ozel farkli ayar yapma imkani su an YOKTUR.
+- Herhangi bir metin editörüyle (Not Defteri dahil) açıp değerleri
+  değiştirebilirsiniz. Geçerli bir JSON dosyası olmalıdır: sayılardan
+  sonra (SON satır hariç) virgül, metin değerleri çift tırnak içinde.
+- Değişiklik yaptıktan sonra programı (run.bat ya da
+  "python mmsaligner.py") YENİDEN ÇALIŞTIRMANIZ yeterlidir; başka bir
+  işlem gerekmez, dosya her çalıştırmada yeniden okunur.
+- Bir anahtarı SİLERSENİZ ya da dosyayı tamamen SİLERSENİZ, o ayar
+  için varsayılan değer kullanılır (program hata vermez).
+- Ayarlar TÜM input/ klasöründeki dosyalara aynı şekilde uygulanır;
+  dosyaya özel farklı ayar yapma imkânı şu an YOKTUR.
 
-1) gap_threshold_ms (varsayilan: 50.0)
+1) gap_threshold_ms (varsayılan: 50.0)
 ------------------------------------------
-NE ISE YARAR: "segments" tier'inde bir sessizligin kendi basina, ayri
-ve etiketsiz ("") bir aralik olarak gosterilmesi icin gereken en kisa
-sureyi (milisaniye) belirler. Bu sureden KISA sessizlikler ayri
-gosterilmez, komsu harflere paylastirilarak kapatilir.
+NE İŞE YARAR: "segments" tier'ında bir sessizliğin kendi başına, ayrı
+ve etiketsiz ("") bir aralık olarak gösterilmesi için gereken en kısa
+süreyi (milisaniye) belirler. Bu süreden KISA sessizlikler ayrı
+gösterilmez, komşu harflere paylaştırılarak kapatılır.
 
-NE ZAMAN DEGISTIRMELI:
-- "segments" tier'inde OLMASI GEREKENDEN COK DAHA FAZLA kucuk (birkaç
-  10 ms'lik) sessizlik araligi goruyorsaniz (orn. yavas/tane tane
-  konusulmus, harfler arasi dogal bosluklari uzun olan bir kayitta),
-  degeri YUKSELTIN (orn. 100, 150, 200). Bu, gercekte konusmanin
-  parcasi olan ama VAD'in kisaca "sessiz" saydigi aninlari yanlislikla
-  ayri sessizlik gostermekten kacinir.
-    (Ornek: bu projede yavas konusulmus bir kayitta 50 -> 200 yapmak
-    gerekli oldu; su anki config.json'da bu deger 200.0.)
-- "segments" tier'inde OLMASI GEREKEN gercek duraksamalar/nefes
-  aralarinin bile ayri gosterilmedigini, harflere karistigini
-  goruyorsaniz, degeri DUSURUN (orn. 30, 20).
+NE ZAMAN DEĞİŞTİRMELİ:
+- "segments" tier'ında OLMASI GEREKENDEN ÇOK DAHA FAZLA küçük (birkaç
+  10 ms'lik) sessizlik aralığı görüyorsanız (örn. yavaş/tane tane
+  konuşulmuş, harfler arası doğal boşlukları uzun olan bir kayıtta),
+  değeri YÜKSELTİN (örn. 100, 150, 200). Bu, gerçekte konuşmanın
+  parçası olan ama VAD'ın kısaca "sessiz" saydığı anları yanlışlıkla
+  ayrı sessizlik olarak göstermekten kaçınır.
+    (Örnek: bu projede yavaş konuşulmuş bir kayıtta 50 -> 200 yapmak
+    gerekli oldu; şu anki config.json'da bu değer 200.0.)
+- "segments" tier'ında OLMASI GEREKEN gerçek duraksamaların/nefes
+  aralarının bile ayrı gösterilmediğini, harflere karıştığını
+  görüyorsanız, değeri DÜŞÜRÜN (örn. 30, 20).
 
-DIKKAT: Bu ayar sadece "segments" tier'ini etkiler; "words" tier'i
-buyuklugune bakilmaksizin butun bosluklari her zaman iki kelimenin
-ortasindan boler (hicbir zaman ayri sessizlik gostermez), bu ayardan
-ETKILENMEZ.
+DİKKAT: Bu ayar sadece "segments" tier'ını etkiler; "words" tier'ı
+büyüklüğüne bakılmaksızın bütün boşlukları her zaman iki kelimenin
+ortasından böler (hiçbir zaman ayrı sessizlik göstermez), bu ayardan
+ETKİLENMEZ.
 
-2) vad_db_threshold (varsayilan: -40.0)
+2) vad_db_threshold (varsayılan: -40.0)
 ------------------------------------------
-NE ISE YARAR: Basit enerji-tabanli VAD'in (ses etkinligi tespiti) bir
-ani "sessiz" sayabilmesi icin enerjinin ALTINDA kalmasi gereken dB
-esigi. Bu deger, gap_threshold_ms'in "sessizlik" olarak degerlendirdigi
-her alanin GERCEKTEN sessiz olup olmadigina karar verir.
+NE İŞE YARAR: Basit enerji tabanlı VAD'ın (ses etkinliği tespiti) bir
+anı "sessiz" sayabilmesi için enerjinin ALTINDA kalması gereken dB
+eşiği. Bu değer, gap_threshold_ms'in "sessizlik" olarak değerlendirdiği
+her alanın GERÇEKTEN sessiz olup olmadığına karar verir.
 
-NE ZAMAN DEGISTIRMELI:
-- Kayit GURULTULU ise (fan sesi, oda gurultusu, mikrofon hisi) ve VAD
-  bu gurultuyu "konusma" sanip gercek sessizlikleri KACIRIYORSA (yani
-  olmasi gereken sessizlik araliklari "segments" tier'inde
-  gorunmuyorsa), degeri DUSURUN (daha negatif yapin, orn. -50, -60) -
-  boylece sadece COK sessiz anlar "sessiz" sayilir.
-- Kayit COK TEMIZ/sessiz bir ortamda alinmis ve VAD hala bazi gercek
-  konusma anlarini (orn. yumusak/hafif telaffuz edilmis sesler,
-  fisilti) yanlislikla "sessiz" sayiyorsa, degeri YUKSELTIN (daha az
-  negatif, orn. -30, -25).
-- Genel kural: YUKSEK (daha az negatif, orn. -25) deger VAD'i daha
-  HASSAS/AGRESIF yapar (daha COK yeri sessiz sayar); DUSUK (daha
-  negatif, orn. -55) deger daha AZ hassas yapar (daha AZ yeri sessiz
+NE ZAMAN DEĞİŞTİRMELİ:
+- Kayıt GÜRÜLTÜLÜ ise (fan sesi, oda gürültüsü, mikrofon hışırtısı) ve VAD
+  bu gürültüyü "konuşma" sanıp gerçek sessizlikleri KAÇIRIYORSA (yani
+  olması gereken sessizlik aralıkları "segments" tier'ında
+  görünmüyorsa), değeri DÜŞÜRÜN (daha negatif yapın, örn. -50, -60) -
+  böylece sadece ÇOK sessiz anlar "sessiz" sayılır.
+- Kayıt ÇOK TEMİZ/sessiz bir ortamda alınmış ve VAD hâlâ bazı gerçek
+  konuşma anlarını (örn. yumuşak/hafif telaffuz edilmiş sesler,
+  fısıltı) yanlışlıkla "sessiz" sayıyorsa, değeri YÜKSELTİN (daha az
+  negatif, örn. -30, -25).
+- Genel kural: YÜKSEK (daha az negatif, örn. -25) değer VAD'ı daha
+  HASSAS/AGRESİF yapar (daha ÇOK yeri sessiz sayar); DÜŞÜK (daha
+  negatif, örn. -55) değer daha AZ hassas yapar (daha AZ yeri sessiz
   sayar, sadece belirgin sessizlikleri yakalar).
 
-3) syllable_word_gap_ms (varsayilan: 10.0)
+3) syllable_word_gap_ms (varsayılan: 10.0)
 ------------------------------------------
-NE ISE YARAR: "syllables" tier'inde iki kelimenin AYRI hecelenmesi
-(hece kelime sinirini asla gecmez) icin, aralarindaki VAD boslugunun
-asmasi gereken en kisa sure (ms). Bu sureden KISA (ya da hic) bosluksa,
-iki kelime TEK bir akis olarak birlikte hecelenir (hece kelime sinirini
-gecebilir - baglantili/duraksamasiz konusmayi yansitir).
+NE İŞE YARAR: "syllables" tier'ında iki kelimenin AYRI hecelenmesi
+(hece kelime sınırını asla geçmez) için, aralarındaki VAD boşluğunun
+aşması gereken en kısa süre (ms). Bu süreden KISA (ya da hiç) boşluksa,
+iki kelime TEK bir akış olarak birlikte hecelenir (hece kelime sınırını
+geçebilir - bağlantılı/duraksamasız konuşmayı yansıtır).
 
-NE ZAMAN DEGISTIRMELI:
-- "syllables" tier'inde kelime sinirlarini asan (orn. bir kelimenin
-  son harfinin bir sonraki kelimenin ilk hecesine karistigi) beklenmedik
-  birlesmeler COK SIK goruyorsaniz, degeri DUSURUN (orn. 5) - boylece
-  daha kucuk bosluklarda bile kelimeler ayri hecelenir.
-- Kayittaki konusmaci COK akici/baglantili konusuyorsa ve kelimeler
-  arasinda GERCEKTEN neredeyse hic bosluk yoksa, ama yine de her
-  kelimenin AYRI hecelenmesini istiyorsaniz, degeri YUKSELTIN (orn. 20,
-  30) - boylece daha buyuk dogal bosluklarda bile kelimeler birlesmez.
-- Bu ayari cok yukseltmek (orn. 100+), pratikte TUM kelimeleri her
-  zaman ayri hecelemeye zorlar (baglantili konusma ozelligini etkisiz
-  kilar).
+NE ZAMAN DEĞİŞTİRMELİ:
+- "syllables" tier'ında kelime sınırlarını aşan (örn. bir kelimenin
+  son harfinin bir sonraki kelimenin ilk hecesine karıştığı) beklenmedik
+  birleşmeler ÇOK SIK görüyorsanız, değeri DÜŞÜRÜN (örn. 5) - böylece
+  daha küçük boşluklarda bile kelimeler ayrı hecelenir.
+- Kayıttaki konuşmacı ÇOK akıcı/bağlantılı konuşuyorsa ve kelimeler
+  arasında GERÇEKTEN neredeyse hiç boşluk yoksa, ama yine de her
+  kelimenin AYRI hecelenmesini istiyorsanız, değeri YÜKSELTİN (örn. 20,
+  30) - böylece daha büyük doğal boşluklarda bile kelimeler birleşmez.
+- Bu ayarı çok yükseltmek (örn. 100+), pratikte TÜM kelimeleri her
+  zaman ayrı hecelemeye zorlar (bağlantılı konuşma özelliğini etkisiz
+  kılar).
 
 4) syllable_intensity_band_low_hz / syllable_intensity_band_high_hz
-   (varsayilan: 70.0 / 1000.0)
+   (varsayılan: 70.0 / 1000.0)
 ------------------------------------------------------------------------
-NE ISE YARAR: Hece motorunun, kurallarin COZEMEDIGI nadir durumlarda
-(bkz. madde 5) "hakem" olarak kullandigi ses enerjisi (intensity)
-konturunu cikarmak icin bant-gecirgen filtrenin alt/ust sinirlari (Hz).
-Varsayilan 70-1000 Hz araligi, temel frekans (pitch) ve ilk formant
-civarini kapsar, boylece yuksek frekansli surtunmeli/tislama
-gurultusunu (orn. "s", "ş" sesleri) bastirip enerji konturunu
-"sonorluk"a (V/C ayrimina) daha yakin hale getirir.
+NE İŞE YARAR: Hece motorunun, kuralların ÇÖZEMEDİĞİ nadir durumlarda
+(bkz. madde 5) "hakem" olarak kullandığı ses enerjisi (intensity)
+konturunu çıkarmak için bant geçiren filtrenin alt/üst sınırları (Hz).
+Varsayılan 70-1000 Hz aralığı, temel frekans (pitch) ve ilk formant
+civarını kapsar, böylece yüksek frekanslı sürtünmeli/tıslama
+gürültüsünü (örn. "s", "ş" sesleri) bastırıp enerji konturunu
+"sonorluk"a (V/C ayrımına) daha yakın hale getirir.
 
-NE ZAMAN DEGISTIRMELI: Bu iki ayari degistirmeniz GENELLIKLE gerekmez;
-sadece cok DUSUK ya da cok YUKSEK sesli bir konusmaci icin (orn. cok
-kalin/pes bir ses icin alt siniri 50 Hz'e dusurmek, ya da cok ince/tiz
-bir ses icin biraz yukseltmek) ince ayar yapmak isterseniz kullanin.
+NE ZAMAN DEĞİŞTİRMELİ: Bu iki ayarı değiştirmeniz GENELLİKLE gerekmez;
+sadece çok DÜŞÜK ya da çok YÜKSEK sesli bir konuşmacı için (örn. çok
+kalın/pes bir ses için alt sınırı 50 Hz'e düşürmek, ya da çok ince/tiz
+bir ses için biraz yükseltmek) ince ayar yapmak isterseniz kullanın.
 
-5) syllable_intensity_dip_db (varsayilan: 2.0)
+5) syllable_intensity_dip_db (varsayılan: 2.0)
 ------------------------------------------------------------------------
-NE ISE YARAR: Yukaridaki intensity konturunda "gercek bir dusum
-(dip) var" sayilmasi icin gereken en az derinlik (dB) - "akustik
-hakem" mekanizmasi icin kullanilir.
+NE İŞE YARAR: Yukarıdaki intensity konturunda "gerçek bir düşüm
+(dip) var" sayılması için gereken en az derinlik (dB) - "akustik
+hakem" mekanizması için kullanılır.
 
-NE ZAMAN DEGISTIRMELI: Bu ayar SADECE hece kurallarinin COZEMEDIGI
-(gercek Turkce metinlerde NADIR gorulen) durumlarda etkili olur, bu
-yuzden gunluk kullanimda pratik bir etkisi COK AZ hissedilir. Deger
-YUKSELTILIRSE hakem daha SECICI olur (daha az durumda "net dip var"
-der, daha sik varsayilan davranisa - onceki hecenin kodasina ekleme -
-doner); DUSURULURSE daha az derin dususleri bile "gercek dip" sayar.
+NE ZAMAN DEĞİŞTİRMELİ: Bu ayar SADECE hece kurallarının ÇÖZEMEDİĞİ
+(gerçek Türkçe metinlerde NADİR görülen) durumlarda etkili olur, bu
+yüzden günlük kullanımda pratik bir etkisi ÇOK AZ hissedilir. Değer
+YÜKSELTİLİRSE hakem daha SEÇİCİ olur (daha az durumda "net dip var"
+der, daha sık varsayılan davranışa - önceki hecenin kodasına ekleme -
+döner); DÜŞÜRÜLÜRSE daha az derin düşüşleri bile "gerçek dip" sayar.
 
-6) Hizli sorun -> ayar tablosu
+6) Hızlı sorun -> ayar tablosu
 ------------------------------------
-    BELIRTI                                    -> HANGI AYAR, HANGI YONE
+    BELİRTİ                                    -> HANGİ AYAR, HANGİ YÖNE
     ---------------------------------------------------------------------
-    "segments"'te cok fazla kucuk sessizlik     -> gap_threshold_ms YUKSELT
-    "segments"'te gercek duraksamalar kayboluyor -> gap_threshold_ms DUSUR
-    Gurultu sessizlik saniliyor                 -> vad_db_threshold DUSUR
-    Gercek sessizlikler kaciriliyor              -> vad_db_threshold YUKSELT
-    "syllables"'te kelimeler beklenmedik birlesiyor -> syllable_word_gap_ms DUSUR
-    Her kelimeyi kesin ayri hecelemek istiyorum -> syllable_word_gap_ms YUKSELT
+    "segments"'te çok fazla küçük sessizlik     -> gap_threshold_ms YÜKSELT
+    "segments"'te gerçek duraksamalar kayboluyor -> gap_threshold_ms DÜŞÜR
+    Gürültü sessizlik sanılıyor                 -> vad_db_threshold DÜŞÜR
+    Gerçek sessizlikler kaçırılıyor              -> vad_db_threshold YÜKSELT
+    "syllables"'te kelimeler beklenmedik birleşiyor -> syllable_word_gap_ms DÜŞÜR
+    Her kelimeyi kesin ayrı hecelemek istiyorum -> syllable_word_gap_ms YÜKSELT
 
-Bir ayari degistirdikten sonra SONUCU GORMEK icin, mmsaligner.py'yi
-tekrar calistirip output/ klasorundeki ilgili .TextGrid dosyasini
-Praat'ta (ya da bir metin editorunde) tekrar acmaniz yeterlidir - eski
-dosyanin uzerine yazilir.
+Bir ayarı değiştirdikten sonra SONUCU GÖRMEK için, mmsaligner.py'yi
+tekrar çalıştırıp output/ klasöründeki ilgili .TextGrid dosyasını
+Praat'ta (ya da bir metin editöründe) tekrar açmanız yeterlidir - eski
+dosyanın üzerine yazılır.
 
-6) long_word_warning_factor (varsayilan: 1.8)
+6) long_word_warning_factor (varsayılan: 1.8)
 ------------------------------------------------------------------------
-NE ISE YARAR: Transkriptin ORTASINDA eksik bir bolum varsa (seste
-konusulan ama .txt'de yazilmayan kelimeler), hizalama bu konusmayi
-komsu kelimelere yayar ve o kelimeler anormal UZUN gorunur. Program
-her kelimenin konusma suresini (gercek sessizlikler/duraksamalar
-HARIC) harf sayisina boler ve dosyanin kendi ortalama hiziyla
-(medyan) karsilastirir; beklenenin bu kat sayisindan daha uzun olan
-kelimeler icin terminale ve mmsaligner.log'a [UYARI] yazar. TextGrid
-yine olusturulur; uyari sadece "Praat'ta bu noktayi kontrol edin"
-anlamina gelir.
-    Ornek: [UYARI] 'kayit': normalden belirgin sekilde uzun ...
-      - "kapıya": 1.239–2.121 sn arasi (... 1.9 kat)
+NE İŞE YARAR: Transkriptin ORTASINDA eksik bir bölüm varsa (seste
+konuşulan ama .txt'de yazılmayan kelimeler), hizalama bu konuşmayı
+komşu kelimelere yayar ve o kelimeler anormal UZUN görünür. Program
+her kelimenin konuşma süresini (gerçek sessizlikler/duraksamalar
+HARİÇ) harf sayısına böler ve dosyanın kendi ortalama hızıyla
+(medyan) karşılaştırır; beklenenin bu kat sayısından daha uzun olan
+kelimeler için terminale ve mmsaligner.log'a [UYARI] yazar. TextGrid
+yine oluşturulur; uyarı sadece "Praat'ta bu noktayı kontrol edin"
+anlamına gelir.
+    Örnek: [UYARI] 'kayit': normalden belirgin şekilde uzun ...
+      - "kapıya": 1.239–2.121 sn arası (... 1.9 kat)
 
-NE ZAMAN DEGISTIRMELI:
-- Transkript dogru oldugu halde uyari aliyorsaniz (orn. konusmaci
-  bazi kelimeleri cok uzatarak/heceleyerek okuyor, "eee" gibi
-  duraksama sesleri var), degeri YUKSELTIN (orn. 2.2, 2.5).
-- Eksik bolumleri kacirdigini dusunuyorsaniz DUSURUN (orn. 1.5);
-  ancak 1.4'un altinda dogru transkriptlerde de uyari gorulebilir.
-- Kontrolu tamamen kapatmak icin 0 yapin.
+NE ZAMAN DEĞİŞTİRMELİ:
+- Transkript doğru olduğu hâlde uyarı alıyorsanız (örn. konuşmacı
+  bazı kelimeleri çok uzatarak/heceleyerek okuyor, "eee" gibi
+  duraksama sesleri var), değeri YÜKSELTİN (örn. 2.2, 2.5).
+- Eksik bölümleri kaçırdığını düşünüyorsanız DÜŞÜRÜN (örn. 1.5);
+  ancak 1.4'ün altında doğru transkriptlerde de uyarı görülebilir.
+- Kontrolü tamamen kapatmak için 0 yapın.
 
-SINIRLAR: Tek bir KISA kelimenin (orn. "şu", "ve") eksik olmasi
-genellikle yakalanamaz (komsu kelimeyi yeterince uzatmaz). Dosyada 5'ten
-az kelime varsa kontrol yapilmaz.
+SINIRLAR: Tek bir KISA kelimenin (örn. "şu", "ve") eksik olması
+genellikle yakalanamaz (komşu kelimeyi yeterince uzatmaz). Dosyada 5'ten
+az kelime varsa kontrol yapılmaz.
 
-7) edge_speech_warning_ms (varsayilan: 400.0)
+7) edge_speech_warning_ms (varsayılan: 400.0)
 ------------------------------------------------------------------------
-NE ISE YARAR: Transkriptin BASINDA ya da SONUNDA eksik bir bolum
-varsa, hizalama o konusmayi kaydin basindaki/sonundaki etiketsiz ("")
-"sessizlik" araligina koyar - yani uzun kelime kontrolu bunu goremez.
-Bu ayar, o etiketsiz aralikta VAD'a gore (bkz. vad_db_threshold)
-SESLI olan toplam surenin kac milisaniyeyi asinca [UYARI] verilecegini
+NE İŞE YARAR: Transkriptin BAŞINDA ya da SONUNDA eksik bir bölüm
+varsa, hizalama o konuşmayı kaydın başındaki/sonundaki etiketsiz ("")
+"sessizlik" aralığına koyar - yani uzun kelime kontrolü bunu göremez.
+Bu ayar, o etiketsiz aralıkta VAD'a göre (bkz. vad_db_threshold)
+SESLİ olan toplam sürenin kaç milisaniyeyi aşınca [UYARI] verileceğini
 belirler.
 
-NE ZAMAN DEGISTIRMELI:
-- Kaydin basinda/sonunda konusma olmadigi halde uyari aliyorsaniz
-  (orn. uzun nefes, gurultu, mikrofon tıkırtısı, muzik), degeri
-  YUKSELTIN (orn. 800, 1500) ya da kayit gurultuluyse once
-  vad_db_threshold'u dusurun.
-- Kontrolu tamamen kapatmak icin 0 yapin.
+NE ZAMAN DEĞİŞTİRMELİ:
+- Kaydın başında/sonunda konuşma olmadığı hâlde uyarı alıyorsanız
+  (örn. uzun nefes, gürültü, mikrofon tıkırtısı, müzik), değeri
+  YÜKSELTİN (örn. 800, 1500) ya da kayıt gürültülüyse önce
+  vad_db_threshold'u düşürün.
+- Kontrolü tamamen kapatmak için 0 yapın.
 
-8) long_audio_warning_sec (varsayilan: 600.0 = 10 dakika)
+8) long_audio_warning_sec (varsayılan: 600.0 = 10 dakika)
 ------------------------------------------------------------------------
-NE ISE YARAR: Ses dosyasinin suresi bu degeri (saniye) asarsa,
-hizalama BASLAMADAN once terminale ve mmsaligner.log'a [UYARI] yazilir.
-Dosya yine islenir; uyari sadece bilgilendirme amaclidir.
-    Ornek: [UYARI] 'kayit': ses dosyası uzun (24.5 dk; eşik 10.0 dk) ...
+NE İŞE YARAR: Ses dosyasının süresi bu değeri (saniye) aşarsa,
+hizalama BAŞLAMADAN önce terminale ve mmsaligner.log'a [UYARI] yazılır.
+Dosya yine işlenir; uyarı sadece bilgilendirme amaçlıdır.
+    Örnek: [UYARI] 'kayit': ses dosyası uzun (24.5 dk; eşik 10.0 dk) ...
 
-NEDEN: Hizalamanin bellek ihtiyaci kabaca surenin KARESIYLE buyur
-(30 dakikalik bir kayit birkac GB, 1 saatlik bir kayit 10 GB'in
-uzerinde bellek isteyebilir); bellek yetmezse program yavaslayabilir
-ya da durabilir. Ayrica uzun kayitlarda bir noktadaki kayma sonrasina
-yayilabilir. Bu yuzden kaydi (ve transkripti) 5-10 dakikalik
-parcalara bolmek, guclu bir bilgisayarda bile daha iyi sonuc verir.
+NEDEN: Hizalamanın bellek ihtiyacı kabaca sürenin KARESİYLE büyür
+(30 dakikalık bir kayıt birkaç GB, 1 saatlik bir kayıt 10 GB'ın
+üzerinde bellek isteyebilir); bellek yetmezse program yavaşlayabilir
+ya da durabilir. Ayrıca uzun kayıtlarda bir noktadaki kayma sonrasına
+yayılabilir. Bu yüzden kaydı (ve transkripti) 5-10 dakikalık
+parçalara bölmek, güçlü bir bilgisayarda bile daha iyi sonuç verir.
 
-NE ZAMAN DEGISTIRMELI:
-- Bilgisayarinizda bol bellek varsa ve uzun dosyalari sorunsuz
-  isleyebildiginizi gorduyseniz, degeri YUKSELTIN (orn. 1200, 1800).
-- Kontrolu tamamen kapatmak icin 0 yapin.
+NE ZAMAN DEĞİŞTİRMELİ:
+- Bilgisayarınızda bol bellek varsa ve uzun dosyaları sorunsuz
+  işleyebildiğinizi gördüyseniz, değeri YÜKSELTİN (örn. 1200, 1800).
+- Kontrolü tamamen kapatmak için 0 yapın.

@@ -20,7 +20,7 @@ seviyesinde zaman damgaları içeren bir Praat TextGrid dosyası üreten,
 
 ## Öne çıkanlar
 
-- **4 tier'li TextGrid çıktısı**: `segments` (harf), `syllables`
+- **4 tier'lı TextGrid çıktısı**: `segments` (harf), `syllables`
   (hece), `words` (kelime), `txt` (tüm transkript).
 - **Toplu işleme**: `input/` klasöründeki her `wav+txt` çiftini tek
   seferde işler, `output/` klasörüne yazar; bir dosyada sorun olursa

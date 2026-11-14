@@ -115,22 +115,6 @@ YÜKSELTİLİRSE hakem daha SEÇİCİ olur (daha az durumda "net dip var"
 der, daha sık varsayılan davranışa - önceki hecenin kodasına ekleme -
 döner); DÜŞÜRÜLÜRSE daha az derin düşüşleri bile "gerçek dip" sayar.
 
-6) Hızlı sorun -> ayar tablosu
-------------------------------------
-    BELİRTİ                                    -> HANGİ AYAR, HANGİ YÖNE
-    ---------------------------------------------------------------------
-    "segments"'te çok fazla küçük sessizlik     -> gap_threshold_ms YÜKSELT
-    "segments"'te gerçek duraksamalar kayboluyor -> gap_threshold_ms DÜŞÜR
-    Gürültü sessizlik sanılıyor                 -> vad_db_threshold DÜŞÜR
-    Gerçek sessizlikler kaçırılıyor              -> vad_db_threshold YÜKSELT
-    "syllables"'te kelimeler beklenmedik birleşiyor -> syllable_word_gap_ms DÜŞÜR
-    Her kelimeyi kesin ayrı hecelemek istiyorum -> syllable_word_gap_ms YÜKSELT
-
-Bir ayarı değiştirdikten sonra SONUCU GÖRMEK için, mmsaligner.py'yi
-tekrar çalıştırıp output/ klasöründeki ilgili .TextGrid dosyasını
-Praat'ta (ya da bir metin editöründe) tekrar açmanız yeterlidir - eski
-dosyanın üzerine yazılır.
-
 6) long_word_warning_factor (varsayılan: 1.8)
 ------------------------------------------------------------------------
 NE İŞE YARAR: Transkriptin ORTASINDA eksik bir bölüm varsa (seste
@@ -191,3 +175,19 @@ NE ZAMAN DEĞİŞTİRMELİ:
 - Bilgisayarınızda bol bellek varsa ve uzun dosyaları sorunsuz
   işleyebildiğinizi gördüyseniz, değeri YÜKSELTİN (örn. 1200, 1800).
 - Kontrolü tamamen kapatmak için 0 yapın.
+
+9) Hızlı sorun -> ayar tablosu
+------------------------------------
+    BELİRTİ                                         -> HANGİ AYAR, HANGİ YÖNE
+    -------------------------------------------------------------------------------
+    "segments"'te çok fazla küçük sessizlik         -> gap_threshold_ms YÜKSELT
+    "segments"'te gerçek duraksamalar kayboluyor    -> gap_threshold_ms DÜŞÜR
+    Gürültü sessizlik sanılıyor                     -> vad_db_threshold DÜŞÜR
+    Gerçek sessizlikler kaçırılıyor                 -> vad_db_threshold YÜKSELT
+    "syllables"'te kelimeler beklenmedik birleşiyor -> syllable_word_gap_ms DÜŞÜR
+    Her kelimeyi kesin ayrı hecelemek istiyorum     -> syllable_word_gap_ms YÜKSELT
+
+Bir ayarı değiştirdikten sonra SONUCU GÖRMEK için, mmsaligner.py'yi
+tekrar çalıştırıp output/ klasöründeki ilgili .TextGrid dosyasını
+Praat'ta (ya da bir metin editöründe) tekrar açmanız yeterlidir - eski
+dosyanın üzerine yazılır.

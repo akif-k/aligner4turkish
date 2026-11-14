@@ -180,7 +180,7 @@ went wrong, so if it exists it always belongs to the latest run.
   points `SSL_CERT_FILE` to the non-existent
   `${CONDA_PREFIX}/ssl/cacert.pem`; change that line to
   `${CONDA_PREFIX}/Library/ssl/cacert.pem`.
-- **Garbled Turkish characters in the Windows console (e.g. `SE??M`):**
+- **Garbled Turkish characters in the Windows console (e.g. `SE??M` instead of `SEÇİM`):**
   this only comes from the console code page; TextGrid files always
   contain correct UTF-8. To fix the screen output, run `chcp 65001`
   before starting the program.

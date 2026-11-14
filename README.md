@@ -243,7 +243,7 @@ dosyasındaki bilgilerle atıfta bulunun. DOI:
 [10.5281/zenodo.22164016](https://doi.org/10.5281/zenodo.22164016)
 (bu, tüm sürümleri temsil eder ve her zaman en son sürüme yönlenir).
 
-## Gelistirme Notu
+## Geliştirme Notu
 
-Bu projenin gelistirilmesinde, kod yazimi ve dokumantasyon calismalarina
-destek olarak Anthropic'in Claude Code araci kullanilmistir.
+Bu projenin kod ve dokümantasyonunun yazılmasında Anthropic'in Claude Code
+aracından yardım alınmıştır.

@@ -176,7 +176,7 @@ oluşturulur; yani varsa, her zaman son çalıştırmaya aittir.
   dosyası `SSL_CERT_FILE` değişkenini var olmayan
   `${CONDA_PREFIX}/ssl/cacert.pem` yoluna yönlendirir; bu satırı
   `${CONDA_PREFIX}/Library/ssl/cacert.pem` olarak düzeltin.
-- **Windows konsolunda Türkçe karakterler bozuk görünüyor (ör. `SE??M`):**
+- **Windows konsolunda Türkçe karakterler bozuk görünüyor (ör. `SEÇİM` yerine `SE??M`):**
   Bu yalnızca konsolun kod sayfasından kaynaklanır, TextGrid dosyaları
   her zaman doğru UTF-8 içerir. Ekran çıktısını düzeltmek için
   çalıştırmadan önce `chcp 65001` komutunu verin.

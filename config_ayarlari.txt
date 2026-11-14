@@ -178,14 +178,19 @@ NE ZAMAN DEĞİŞTİRMELİ:
 
 9) Hızlı sorun -> ayar tablosu
 ------------------------------------
-    BELİRTİ                                         -> HANGİ AYAR, HANGİ YÖNE
-    -------------------------------------------------------------------------------
-    "segments"'te çok fazla küçük sessizlik         -> gap_threshold_ms YÜKSELT
-    "segments"'te gerçek duraksamalar kayboluyor    -> gap_threshold_ms DÜŞÜR
-    Gürültü sessizlik sanılıyor                     -> vad_db_threshold DÜŞÜR
-    Gerçek sessizlikler kaçırılıyor                 -> vad_db_threshold YÜKSELT
-    "syllables"'te kelimeler beklenmedik birleşiyor -> syllable_word_gap_ms DÜŞÜR
-    Her kelimeyi kesin ayrı hecelemek istiyorum     -> syllable_word_gap_ms YÜKSELT
+    BELİRTİ                                          -> HANGİ AYAR, HANGİ YÖNE
+    ------------------------------------------------------------------------------------
+    "segments"'te çok fazla küçük sessizlik          -> gap_threshold_ms YÜKSELT
+    "segments"'te gerçek duraksamalar kayboluyor     -> gap_threshold_ms DÜŞÜR
+    Gürültü sessizlik sanılıyor                      -> vad_db_threshold DÜŞÜR
+    Gerçek sessizlikler kaçırılıyor                  -> vad_db_threshold YÜKSELT
+    "syllables"'te kelimeler beklenmedik birleşiyor  -> syllable_word_gap_ms DÜŞÜR
+    Her kelimeyi kesin ayrı hecelemek istiyorum      -> syllable_word_gap_ms YÜKSELT
+    Doğru transkriptte uzun kelime uyarısı           -> long_word_warning_factor YÜKSELT
+    Metindeki eksik bölümler uyarı vermiyor          -> long_word_warning_factor DÜŞÜR
+    Başta/sonda konuşma yokken uyarı geliyor         -> edge_speech_warning_ms YÜKSELT
+    Uzun dosyalar sorunsuz işleniyor, uyarı gereksiz -> long_audio_warning_sec YÜKSELT
+    Bir uyarıyı tamamen kapatmak istiyorum           -> ilgili ayarı (6-8) 0 yap
 
 Bir ayarı değiştirdikten sonra SONUCU GÖRMEK için, mmsaligner.py'yi
 tekrar çalıştırıp output/ klasöründeki ilgili .TextGrid dosyasını
